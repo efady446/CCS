@@ -41,7 +41,6 @@
       scroll-behavior: smooth;
       transition: background 0.5s ease, color 0.5s ease;
     }
-    /* Alternate Mode Styling */
     body.alternate-mode {
       background: var(--alt-bg);
       color: var(--alt-text);
@@ -155,7 +154,7 @@
     ======================================================== */
     .container {
       max-width: 1200px;
-      margin: 120px auto 80px;
+      margin: 80px auto 40px;
       padding: 40px 60px;
       background: var(--container-bg);
       border-radius: 12px;
@@ -255,7 +254,7 @@
       background: rgba(0, 0, 0, 0.8);
       border-radius: 4px;
     }
-    /* Winner effect: green text with pulsing glow and green border */
+    /* Winner effect */
     .text-winner {
       color: #00ff00;
       text-shadow: 0 0 10px #00ff00;
@@ -266,7 +265,7 @@
       50% { transform: scale(1.05); text-shadow: 0 0 20px #00ff00; }
       100% { transform: scale(1); text-shadow: 0 0 10px #00ff00; }
     }
-    /* Loser effect: red text with fading red glow and red border */
+    /* Loser effect */
     .text-loser {
       color: #ff0000;
       text-shadow: 0 0 10px #ff0000;
@@ -277,7 +276,6 @@
       50% { opacity: 0.7; transform: scale(0.95); text-shadow: 0 0 20px #ff0000; }
       100% { opacity: 0.5; transform: scale(0.9); text-shadow: 0 0 10px #ff0000; }
     }
-    /* Special final-winner effect (green glow) */
     .final-winner {
       box-shadow: 0 0 30px #00ff00, 0 0 15px #00ff00;
       animation: finalGlow 2s infinite alternate;
@@ -286,7 +284,6 @@
       from { filter: brightness(1); }
       to { filter: brightness(1.4); }
     }
-    /* Border changes for team blocks based on outcome */
     .team-block.winner-board { border: 3px solid #00ff00; }
     .team-block.loser-board { border: 3px solid #ff0000; }
     
@@ -299,11 +296,13 @@
       justify-content: center;
       padding: 40px 0;
       position: relative;
+      overflow-x: auto;
     }
     .bracket-round {
       min-width: 250px;
       position: relative;
       text-align: center;
+      flex-shrink: 0;
     }
     .match {
       background: #111;
@@ -396,7 +395,6 @@
     .dropZone:hover { background: rgba(212,175,55,0.2); transform: scale(1.04); }
     .dropZone.filled { border-color: var(--gold); background: rgba(212,175,55,0.15); }
     .vs-text { font-size: 1.7em; font-weight: bold; text-shadow: 0 0 10px var(--gold); }
-    /* Additional buttons for manual pairing */
     .manual-pairing-btns {
       display: flex;
       gap: 10px;
@@ -442,7 +440,6 @@
       from { text-shadow: 0 0 10px var(--gold); }
       to { text-shadow: 0 0 35px var(--gold); }
     }
-    /* Trophy image animation */
     .trophy {
       position: absolute;
       top: -60px;
@@ -562,25 +559,33 @@
     ======================================================== */
     @media (max-width: 768px) {
       .container {
-        margin: 40px 10px;
+        margin: 40px auto;
         padding: 20px;
       }
       h1 { font-size: 2.5em; }
       button { font-size: 1em; padding: 8px 16px; }
       #muteBtn, #themeToggle { font-size: 1.5em; padding: 8px; }
-      .bracket-round { min-width: 200px; }
-      .manual-pairing-btns { flex-direction: row; flex-wrap: wrap; }
+      /* Bracket container: allow horizontal scroll */
+      #bracket, #championBracket {
+        flex-direction: column;
+        overflow-x: auto;
+      }
+      .bracket-round { min-width: 100%; }
+      /* Manual pairing buttons stack vertically */
+      .manual-pairing-btns { flex-direction: column; }
     }
     @media (max-width: 480px) {
       .container {
-        margin: 20px 5px;
+        margin: 20px auto;
         padding: 15px;
       }
       h1 { font-size: 2em; }
       button { font-size: 0.9em; padding: 6px 12px; }
       #muteBtn, #themeToggle { font-size: 1.2em; padding: 6px; }
-      .bracket-round { min-width: 150px; }
+      .bracket-round { min-width: 100%; }
       .manual-pairing-btns { flex-direction: column; }
+      /* Make drop zones more mobile friendly */
+      .dropZone { width: 100%; height: auto; padding: 10px; text-align: center; }
     }
     
     /* ========================================================
@@ -996,9 +1001,7 @@
         round.matches.forEach((match, matchIndex) => {
           const matchDiv = document.createElement('div');
           matchDiv.className = 'match';
-          if (round.matches.length === 1) {
-            matchDiv.classList.add('final-match');
-          }
+          if (round.matches.length === 1) { matchDiv.classList.add('final-match'); }
           const teamsContainer = document.createElement('div');
           teamsContainer.className = 'teams';
           let team1Status = "";
@@ -1320,7 +1323,7 @@
         let list = '<ol style="list-style: decimal; padding-left: 20px;">';
         groupedRecords.forEach(group => {
           let medal = medalMap[group.name] ? medalMap[group.name] + " " : "";
-          // List all win dates (as clickable links) for this champion.
+          // List all win dates as clickable links.
           let dates = group.records.map(rec => {
             let dateStr = new Date(rec.timestamp).toLocaleDateString();
             return `<a href="#" onclick="showChampionRecordByName('${group.name}', ${rec.timestamp}); return false;">${dateStr}</a>`;
