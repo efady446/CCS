@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Responsive Meta Tag -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UEFA Champions League Simulator</title>
   <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
   <style>
     /* ========================================================
-       UEFA Champions League Theming & Creative Styling
+       CSS Variables for Themes & Global Settings
     ======================================================== */
     :root {
       --gold: #d4af37;
@@ -17,10 +19,14 @@
       --overlay-bg: rgba(0, 0, 0, 0.55);
       --container-bg: rgba(0, 0, 0, 0.85);
       --font-family: 'Cinzel', serif;
+      /* Alternate Mode Colors */
+      --alt-bg: #012169;
+      --alt-text: var(--gold);
+      --alt-container-bg: rgba(1, 33, 105, 0.9);
     }
     
     /* ========================================================
-       Reset & Global Styles
+       Global Reset & Base Styles
     ======================================================== */
     * {
       box-sizing: border-box;
@@ -33,7 +39,31 @@
       color: var(--white);
       overflow-x: hidden;
       scroll-behavior: smooth;
+      transition: background 0.5s ease, color 0.5s ease;
     }
+    /* Alternate Mode Styling */
+    body.alternate-mode {
+      background: var(--alt-bg);
+      color: var(--alt-text);
+    }
+    body.alternate-mode .container {
+      background: var(--alt-container-bg);
+      border-color: var(--gold);
+      box-shadow: 0 0 40px rgba(1,33,105,0.7);
+    }
+    body.alternate-mode button {
+      background: var(--alt-bg);
+      color: var(--alt-text);
+      border-color: var(--gold);
+    }
+    body.alternate-mode button:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(1,33,105,0.7);
+    }
+    
+    /* ========================================================
+       Scrollbar Styling
+    ======================================================== */
     ::-webkit-scrollbar {
       width: 12px;
     }
@@ -47,7 +77,7 @@
     }
     
     /* ========================================================
-       Full Screen Background Video & Overlay
+       Fullscreen Background Video & Overlay
     ======================================================== */
     #bgVideo {
       position: fixed;
@@ -58,7 +88,6 @@
       object-fit: cover;
       z-index: -10;
     }
-    /* Gradient overlay for readability */
     #videoOverlay {
       position: fixed;
       top: 0;
@@ -70,9 +99,23 @@
     }
     
     /* ========================================================
-       Mute/Unmute Button
+       Mute/Unmute & Theme Toggle Buttons
     ======================================================== */
     #muteBtn {
+      position: fixed;
+      top: 20px;
+      right: 110px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 3px solid var(--gold);
+      border-radius: 50%;
+      font-size: 1.8em;
+      padding: 12px;
+      cursor: pointer;
+      z-index: 130;
+      transition: transform 0.2s ease;
+    }
+    #muteBtn:hover { transform: scale(1.15); }
+    #themeToggle {
       position: fixed;
       top: 20px;
       right: 20px;
@@ -85,7 +128,7 @@
       z-index: 130;
       transition: transform 0.2s ease;
     }
-    #muteBtn:hover { transform: scale(1.15); }
+    #themeToggle:hover { transform: scale(1.15); }
     
     /* ========================================================
        Toast Notification
@@ -108,7 +151,7 @@
     #toast.show { opacity: 1; }
     
     /* ========================================================
-       Container Styles (Setup, Bracket, Champion)
+       Container Styles
     ======================================================== */
     .container {
       max-width: 1200px;
@@ -122,7 +165,8 @@
       z-index: 2;
       animation: fadeIn 1.5s ease-out;
     }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
+    
     h1, h2, h3 {
       text-align: center;
       margin-bottom: 20px;
@@ -211,18 +255,43 @@
       background: rgba(0, 0, 0, 0.8);
       border-radius: 4px;
     }
-    .text-winner { color: var(--gold); text-shadow: 0 0 10px var(--gold); }
-    .text-loser { color: var(--deep-blue); opacity: 0.8; }
-    .photo-winner { border-color: var(--gold); }
-    .photo-loser { border-color: var(--deep-blue); }
-    /* Special styling for the final winner */
+    /* Winner effect: green text with pulsing glow and green border */
+    .text-winner {
+      color: #00ff00;
+      text-shadow: 0 0 10px #00ff00;
+      animation: winnerGlow 2s infinite;
+    }
+    @keyframes winnerGlow {
+      0% { transform: scale(1); text-shadow: 0 0 10px #00ff00; }
+      50% { transform: scale(1.05); text-shadow: 0 0 20px #00ff00; }
+      100% { transform: scale(1); text-shadow: 0 0 10px #00ff00; }
+    }
+    /* Loser effect: red text with fading red glow and red border */
+    .text-loser {
+      color: #ff0000;
+      text-shadow: 0 0 10px #ff0000;
+      animation: loserFade 3s infinite;
+    }
+    @keyframes loserFade {
+      0% { opacity: 1; transform: scale(1); text-shadow: 0 0 10px #ff0000; }
+      50% { opacity: 0.7; transform: scale(0.95); text-shadow: 0 0 20px #ff0000; }
+      100% { opacity: 0.5; transform: scale(0.9); text-shadow: 0 0 10px #ff0000; }
+    }
+    /* Special final-winner effect (green glow) */
     .final-winner {
-      box-shadow: 0 0 30px var(--gold), 0 0 15px var(--gold);
+      box-shadow: 0 0 30px #00ff00, 0 0 15px #00ff00;
       animation: finalGlow 2s infinite alternate;
     }
     @keyframes finalGlow {
       from { filter: brightness(1); }
       to { filter: brightness(1.4); }
+    }
+    /* Border color changes for team blocks based on outcome */
+    .team-block.winner-board {
+      border: 3px solid #00ff00;
+    }
+    .team-block.loser-board {
+      border: 3px solid #ff0000;
     }
     
     /* ========================================================
@@ -254,7 +323,6 @@
       transform: scale(1.05);
       border-color: var(--gold);
     }
-    /* Special styling for the final match */
     .final-match {
       border-color: var(--gold);
       box-shadow: 0 0 25px var(--gold);
@@ -332,9 +400,16 @@
     .dropZone:hover { background: rgba(212,175,55,0.2); transform: scale(1.04); }
     .dropZone.filled { border-color: var(--gold); background: rgba(212,175,55,0.15); }
     .vs-text { font-size: 1.7em; font-weight: bold; text-shadow: 0 0 10px var(--gold); }
+    /* Additional buttons for manual pairing */
+    .manual-pairing-btns {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+    }
     
     /* ========================================================
-       Champion Page – Extra Creative Celebration
+       Champion Display & Trophy Animation
     ======================================================== */
     #championDisplay {
       background: url('assets/images/champion_cup.jpg') no-repeat center center/cover;
@@ -365,13 +440,31 @@
       font-size: 3.5em;
       margin-bottom: 30px;
       animation: glowChampion 2.5s infinite alternate;
+      position: relative;
     }
     @keyframes glowChampion {
       from { text-shadow: 0 0 10px var(--gold); }
       to { text-shadow: 0 0 35px var(--gold); }
     }
+    /* Trophy image animation */
+    .trophy {
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      opacity: 0;
+      animation: trophyAppear 1s forwards;
+    }
+    @keyframes trophyAppear {
+      0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateX(-50%) scale(1); opacity: 1; }
+    }
     
-    /* Confetti Effects */
+    /* ========================================================
+       Confetti Effects
+    ======================================================== */
     .confetti {
       position: fixed;
       top: 0;
@@ -394,7 +487,9 @@
       100% { transform: translateY(120vh) rotate(360deg); opacity: 0; }
     }
     
-    /* Fireworks Canvas (Champion) */
+    /* ========================================================
+       Fireworks Canvas (Champion)
+    ======================================================== */
     #fireworks {
       position: fixed;
       top: 0;
@@ -407,15 +502,103 @@
     }
     
     /* ========================================================
+       Tournament Modal (for viewing saved tournament bracket)
+    ======================================================== */
+    #tournamentModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 220;
+    }
+    .tournament-modal-inner {
+      background: var(--container-bg);
+      padding: 20px;
+      border: 4px solid var(--gold);
+      border-radius: 10px;
+      max-width: 800px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    /* ========================================================
+       Feedback Modal Styling
+    ======================================================== */
+    #feedbackModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 210;
+    }
+    .feedback-inner {
+      background: var(--container-bg);
+      padding: 20px;
+      border: 4px solid var(--gold);
+      border-radius: 10px;
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+    }
+    
+    /* ========================================================
        Animations
     ======================================================== */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes slideIn { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+    
+    /* ========================================================
+       Responsive Adjustments
+    ======================================================== */
+    @media (max-width: 768px) {
+      .container {
+        margin: 60px 20px;
+        padding: 20px;
+      }
+      h1 { font-size: 2.5em; }
+      button { font-size: 1em; padding: 10px 20px; }
+      #muteBtn, #themeToggle {
+        font-size: 1.5em;
+        padding: 8px;
+      }
+      .bracket-round { min-width: 200px; }
+    }
+    
+    /* ========================================================
+       Persistent Leaderboard Box (on the Setup Page)
+    ======================================================== */
+    #persistentLeaderboard {
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border: 2px solid var(--gold);
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    #persistentLeaderboard h3 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
-<body>
+<body class="dark-mode">
   <!-- Mute/Unmute Button -->
-  <button id="muteBtn">🔊</button>
+  <button id="muteBtn" title="Toggle Sound">🔊</button>
+  <!-- Theme Toggle Button -->
+  <button id="themeToggle" title="Toggle Alternate Mode">⭐</button>
   
   <!-- Fullscreen Background Video -->
   <video id="bgVideo" autoplay muted loop>
@@ -434,15 +617,21 @@
   <!-- Toast Notification -->
   <div id="toast"></div>
   
-  <!-- Confetti Container (for champion page) -->
+  <!-- Confetti Container -->
   <div class="confetti hidden" id="confettiContainer"></div>
   
-  <!-- Fireworks Canvas (for champion page) -->
+  <!-- Fireworks Canvas -->
   <canvas id="fireworks"></canvas>
   
   <!-- SETUP CONTAINER -->
   <div class="container" id="setup">
     <h1>⚽ UEFA Champions League Simulator ⚽</h1>
+    <!-- Persistent Leaderboard Box -->
+    <div id="persistentLeaderboard">
+      <h3>Leaderboard</h3>
+      <div id="persistentLeaderboardContent">No champions recorded yet.</div>
+      <button onclick="clearLeaderboard()" style="margin-top: 10px;">Clear Leaderboard</button>
+    </div>
     <div id="error"></div>
     <div class="controls">
       <label>Number of Teams:
@@ -466,12 +655,17 @@
     <div id="teamInputs"></div>
     <!-- MANUAL PAIRING UI -->
     <div id="manualPairingContainer" class="hidden">
-      <h3>Drag teams into the slots to create matches</h3>
+      <h3>Drag and drop teams into the slots</h3>
       <div id="availableTeams"></div>
       <div id="pairingBucket">
         <div class="dropZone" id="dropZone1" ondragover="allowDrop(event)" ondrop="dropTeam(event, 1)">Team Slot 1</div>
         <div class="vs-text">VS</div>
         <div class="dropZone" id="dropZone2" ondragover="allowDrop(event)" ondrop="dropTeam(event, 2)">Team Slot 2</div>
+      </div>
+      <!-- Additional Manual Pairing Buttons -->
+      <div class="manual-pairing-btns">
+        <button onclick="resetManualPairing()">Reset Pairing</button>
+        <button onclick="shuffleManualPairing()">Shuffle Teams</button>
       </div>
       <!-- FORMED MATCHES REVIEW -->
       <div id="formedMatches"></div>
@@ -492,9 +686,43 @@
   <!-- CHAMPION DISPLAY -->
   <div class="container hidden" id="championDisplay">
     <h2>CHAMPION OF EUROPE</h2>
+    <!-- Trophy icon for animation -->
+    <img src="assets/images/trophy.png" alt="Trophy" class="trophy">
     <div id="champion"></div>
     <div id="championBracket"></div>
     <button onclick="location.reload()">New Tournament</button>
+    <button onclick="openLeaderboard()">Leaderboard</button>
+    <button onclick="openFeedback()">Feedback</button>
+    <!-- Return Home Button -->
+    <button onclick="returnHome()">Return Home</button>
+  </div>
+  
+  <!-- Leaderboard Modal -->
+  <div id="leaderboardModal" class="hidden">
+    <div class="leaderboard-inner">
+      <h2>Past Champions</h2>
+      <div id="leaderboardContent">No champions recorded yet.</div>
+      <button style="margin-top: 20px;" onclick="closeLeaderboard()">Close</button>
+    </div>
+  </div>
+  
+  <!-- Tournament Modal (for viewing a previous tournament's bracket) -->
+  <div id="tournamentModal" class="hidden">
+    <div class="tournament-modal-inner">
+      <h2>Tournament Diagram</h2>
+      <div id="tournamentModalContent"></div>
+      <button onclick="closeTournamentModal()">Close</button>
+    </div>
+  </div>
+  
+  <!-- Feedback Modal -->
+  <div id="feedbackModal" class="hidden">
+    <div class="feedback-inner">
+      <h2>We Value Your Feedback</h2>
+      <textarea id="feedbackText" placeholder="Enter your feedback here..." rows="5" style="width: 100%; padding: 10px; border: 2px solid var(--gold); border-radius: 5px; background: transparent; color: inherit;"></textarea>
+      <button id="submitFeedback" style="margin-top: 20px;">Submit</button>
+      <button style="margin-top: 10px;" onclick="closeFeedback()">Close</button>
+    </div>
   </div>
   
   <script>
@@ -508,10 +736,13 @@
     };
     let manualPairing = {
       availableTeams: [],
+      originalTeams: [],
       matches: [],
       dropSlots: { 1: null, 2: null }
     };
-
+    // Global variable for grouped champion records
+    let groupedChampionRecords = [];
+    
     /***********************
      * Audio & Mute Control *
      ***********************/
@@ -530,7 +761,16 @@
       }
     }
     document.addEventListener('click', tryPlayBgSound, { once: true });
-
+    
+    /***********************
+     * Theme Toggle Control *
+     ***********************/
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('alternate-mode');
+      themeToggle.textContent = document.body.classList.contains('alternate-mode') ? '🌙' : '⭐';
+    });
+    
     /*********************
      * Toast Notifications *
      *********************/
@@ -541,20 +781,22 @@
       setTimeout(() => { toast.classList.remove('show'); }, 3000);
     }
     function showError(message) { showToast(message); }
-
+    
     /*********************
      * Rendering Helpers *
      *********************/
     function renderTeam(team, status) {
-      const hasPhoto = !!team.photo;
+      let boardClass = "";
+      if (status === "winner" || status === "final-winner") boardClass = "winner-board";
+      else if (status === "loser") boardClass = "loser-board";
       return `
-        <div class="team-block ${status === 'final-winner' ? 'final-winner' : ''}">
-          ${hasPhoto ? `<img src="${team.photo}" class="team-photo ${status ? 'photo-' + status : ''}" alt="${team.name}">` : ''}
+        <div class="team-block ${status === 'final-winner' ? 'final-winner' : ''} ${boardClass}">
+          ${team.photo ? `<img src="${team.photo}" class="team-photo ${status ? 'photo-' + status : ''}" alt="${team.name} Logo">` : ''}
           <div class="team-name ${status ? 'text-' + status : ''}">${team.name}</div>
         </div>
       `;
     }
-
+    
     /********************
      * Team Generation  *
      ********************/
@@ -588,7 +830,7 @@
       }
       document.getElementById('startBtn').classList.remove('hidden');
     }
-
+    
     /*********************************
      * Tournament & Bracket Functions *
      *********************************/
@@ -615,6 +857,7 @@
         } else {
           document.getElementById('teamInputs').classList.add('hidden');
           document.getElementById('startBtn').classList.add('hidden');
+          manualPairing.originalTeams = teams.slice();
           startManualPairing(teams);
         }
       } catch (error) { showToast(error.message); }
@@ -626,7 +869,7 @@
         matches.push({ team1: shuffled[i], team2: shuffled[i+1], winner: null });
       return matches;
     }
-
+    
     /**********************
      * Manual Pairing UI  *
      **********************/
@@ -636,6 +879,25 @@
       manualPairing.dropSlots = { 1: null, 2: null };
       document.getElementById('manualPairingContainer').classList.remove('hidden');
       updateAvailableTeamsUI();
+    }
+    function resetManualPairing() {
+      if (!manualPairing.originalTeams || manualPairing.originalTeams.length === 0) return;
+      manualPairing.availableTeams = manualPairing.originalTeams.slice();
+      manualPairing.matches = [];
+      manualPairing.dropSlots = { 1: null, 2: null };
+      updateAvailableTeamsUI();
+      document.getElementById('formedMatches').innerHTML = "";
+      document.getElementById('finishPairingBtn').classList.add('hidden');
+      document.getElementById("dropZone1").innerHTML = "Team Slot 1";
+      document.getElementById("dropZone1").classList.remove('filled');
+      document.getElementById("dropZone2").innerHTML = "Team Slot 2";
+      document.getElementById("dropZone2").classList.remove('filled');
+      showToast("Manual pairing has been reset.");
+    }
+    function shuffleManualPairing() {
+      manualPairing.availableTeams.sort(() => Math.random() - 0.5);
+      updateAvailableTeamsUI();
+      showToast("Teams shuffled.");
     }
     function updateAvailableTeamsUI() {
       const container = document.getElementById('availableTeams');
@@ -681,6 +943,7 @@
       document.getElementById("dropZone2").classList.remove('filled');
       if (manualPairing.availableTeams.length === 0)
         document.getElementById('finishPairingBtn').classList.remove('hidden');
+      showToast("Match formed!");
     }
     function updateFormedMatchesUI() {
       const container = document.getElementById('formedMatches');
@@ -714,7 +977,7 @@
       document.getElementById('tournament').classList.remove('hidden');
       renderBracket();
     }
-
+    
     /**************************
      * Bracket Rendering *
      **************************/
@@ -728,7 +991,6 @@
         round.matches.forEach((match, matchIndex) => {
           const matchDiv = document.createElement('div');
           matchDiv.className = 'match';
-          // If this is the final match (only one match in the round) add special class
           if (round.matches.length === 1) {
             matchDiv.classList.add('final-match');
           }
@@ -739,7 +1001,6 @@
           if (match.winner) {
             team1Status = (match.team1.name === match.winner.name) ? "winner" : "loser";
             team2Status = (match.team2.name === match.winner.name) ? "winner" : "loser";
-            // If this is the final match, set the winning team status to "final-winner"
             if (round.matches.length === 1) {
               team1Status = (match.team1.name === match.winner.name) ? "final-winner" : team1Status;
               team2Status = (match.team2.name === match.winner.name) ? "final-winner" : team2Status;
@@ -761,6 +1022,7 @@
           vsText.style.margin = "0 5px";
           teamsContainer.appendChild(vsText);
           teamsContainer.appendChild(team2Div);
+          matchDiv.innerHTML = "";
           matchDiv.appendChild(teamsContainer);
           if (roundIndex < tournament.rounds.length - 1) {
             const connectors = document.createElement('div');
@@ -772,14 +1034,11 @@
         });
         bracketDiv.appendChild(roundDiv);
       });
-      // Center the matches between their parent matches.
       adjustPositions(bracketDiv);
     }
     function selectWinner(roundIndex, matchIndex, winner) {
-      // Determine if this is the final match (only one match in current round).
       const currentRound = tournament.rounds[tournament.currentRound];
       if (currentRound.matches.length === 1) {
-        // Play the special final sound.
         document.getElementById('finalSound').play().catch(err => console.error("Final sound error:", err));
       } else {
         document.getElementById('winnerSound').play().catch(err => console.error("Winner sound error:", err));
@@ -813,7 +1072,6 @@
         connectors.innerHTML = `<div class="connector top"></div><div class="connector bottom"></div>`;
         matchDiv.appendChild(connectors);
       }
-      // If the current round is complete, generate the next round.
       const currentRoundMatches = tournament.rounds[tournament.currentRound].matches;
       if (currentRoundMatches.every(m => m.winner))
         createNextRound();
@@ -836,8 +1094,6 @@
       const names = { 16: 'Round of 16', 8: 'Quarter Finals', 4: 'Semi Finals', 2: 'Final' };
       return names[teamCount] || `Round ${tournament.currentRound + 1}`;
     }
-    
-    // This function centers each match in the current round between its two parent matches.
     function adjustPositions(container) {
       const rounds = container.getElementsByClassName('bracket-round');
       if (rounds.length < 2) return;
@@ -871,13 +1127,13 @@
     function showChampion(winner) {
       document.getElementById('tournament').classList.add('hidden');
       document.getElementById('championDisplay').classList.remove('hidden');
-      // Activate confetti and fireworks effects.
       document.getElementById('confettiContainer').classList.remove('hidden');
       createConfetti();
       createParticles();
       showFireworks();
       document.getElementById('champion').innerHTML = renderTeam(winner, "final-winner");
       renderChampionBracket();
+      saveChampion(winner);
     }
     function renderChampionBracket() {
       const championBracket = document.getElementById('championBracket');
@@ -912,7 +1168,6 @@
         });
         championBracket.appendChild(roundDiv);
       });
-      // Also adjust the champion bracket positions.
       adjustPositions(championBracket);
     }
     
@@ -1009,7 +1264,6 @@
         if (particles.length > 0) requestAnimationFrame(animate);
         else canvas.style.display = 'none';
       }
-      // Trigger fireworks at random positions in the upper half of the screen.
       for (let i = 0; i < 5; i++) {
         setTimeout(() => {
           createFirework(Math.random() * canvas.width, Math.random() * canvas.height / 2);
@@ -1018,8 +1272,175 @@
       }
     }
     
-    // Initially display the setup container.
+    /********************
+     * Persistent Leaderboard *
+     ********************/
+    function updatePersistentLeaderboard() {
+      let champions = JSON.parse(localStorage.getItem('champions')) || [];
+      // Group records by champion name.
+      let groups = {};
+      champions.forEach(rec => {
+        if (!groups[rec.name]) groups[rec.name] = [];
+        groups[rec.name].push(rec);
+      });
+      let groupedRecords = [];
+      for (let name in groups) {
+        groups[name].sort((a, b) => b.timestamp - a.timestamp);
+        groupedRecords.push({ name: name, count: groups[name].length, records: groups[name] });
+      }
+      groupedRecords.sort((a, b) => b.count - a.count);
+      
+      // Assign medal icons by ranking groups.
+      let currentRank = 0;
+      let lastCount = null;
+      let medalMap = {};
+      groupedRecords.forEach((group, index) => {
+        if (lastCount === null || group.count < lastCount) {
+          currentRank = index + 1;
+          lastCount = group.count;
+        }
+        if (currentRank === 1) medalMap[group.name] = "🥇";
+        else if (currentRank === 2) medalMap[group.name] = "🥈";
+        else if (currentRank === 3) medalMap[group.name] = "🥉";
+        else medalMap[group.name] = "";
+      });
+      
+      groupedChampionRecords = groupedRecords;
+      
+      let container = document.getElementById('persistentLeaderboardContent');
+      if (groupedRecords.length === 0) {
+        container.innerHTML = "No champions recorded yet.";
+      } else {
+        let list = '<ol style="list-style: decimal; padding-left: 20px;">';
+        groupedRecords.forEach(group => {
+          let medal = medalMap[group.name] ? medalMap[group.name] + " " : "";
+          // List all win dates for this champion.
+          let dates = group.records.map(rec => {
+            let dateStr = new Date(rec.timestamp).toLocaleDateString();
+            return `<a href="#" onclick="showChampionRecordByName('${group.name}', ${rec.timestamp}); return false;">${dateStr}</a>`;
+          }).join(", ");
+          list += `<li>${medal}${group.name} (Wins: ${group.count}) - ${dates}</li>`;
+        });
+        list += '</ol>';
+        container.innerHTML = list;
+      }
+    }
+    function clearLeaderboard() {
+      localStorage.removeItem('champions');
+      updatePersistentLeaderboard();
+      showToast("Leaderboard cleared.");
+    }
+    
+    /********************
+     * Leaderboard Modal *
+     ********************/
+    function openLeaderboard() {
+      updatePersistentLeaderboard();
+      document.getElementById('leaderboardModal').classList.remove('hidden');
+    }
+    function closeLeaderboard() {
+      document.getElementById('leaderboardModal').classList.add('hidden');
+    }
+    
+    /********************
+     * Show Saved Champion Record *
+     ********************/
+    function showChampionRecord(record) {
+      document.getElementById('setup').classList.add('hidden');
+      document.getElementById('tournament').classList.add('hidden');
+      document.getElementById('championDisplay').classList.remove('hidden');
+      document.getElementById('champion').innerHTML = renderTeam({ name: record.name, photo: "" }, "final-winner");
+      renderSavedBracket(record.rounds);
+    }
+    function showChampionRecordByName(name, timestamp) {
+      let record = null;
+      for (let group of groupedChampionRecords) {
+        if (group.name === name) {
+          record = group.records.find(r => r.timestamp == timestamp);
+          break;
+        }
+      }
+      if (record) {
+        showChampionRecord(record);
+      }
+    }
+    function renderSavedBracket(rounds) {
+      const container = document.getElementById('championBracket');
+      container.innerHTML = "";
+      rounds.forEach((round, roundIndex) => {
+        const roundDiv = document.createElement('div');
+        roundDiv.className = 'bracket-round';
+        roundDiv.innerHTML = `<h3>${getRoundName(round.matches.length * 2)}</h3>`;
+        round.matches.forEach(match => {
+          const matchDiv = document.createElement('div');
+          matchDiv.className = 'match';
+          const teamsContainer = document.createElement('div');
+          teamsContainer.className = 'teams';
+          const team1Div = document.createElement('div');
+          team1Div.innerHTML = renderTeam(match.team1, (match.team1.name === match.winner.name) ? "final-winner" : "loser");
+          const team2Div = document.createElement('div');
+          team2Div.innerHTML = renderTeam(match.team2, (match.team2.name === match.winner.name) ? "final-winner" : "loser");
+          const vsText = document.createElement('div');
+          vsText.textContent = " vs ";
+          vsText.style.margin = "0 5px";
+          teamsContainer.appendChild(team1Div);
+          teamsContainer.appendChild(vsText);
+          teamsContainer.appendChild(team2Div);
+          matchDiv.appendChild(teamsContainer);
+          roundDiv.appendChild(matchDiv);
+        });
+        container.appendChild(roundDiv);
+      });
+      adjustPositions(container);
+    }
+    
+    /********************
+     * Tournament Modal *
+     ********************/
+    function closeTournamentModal() {
+      document.getElementById('tournamentModal').classList.add('hidden');
+    }
+    
+    /********************
+     * Feedback Modal *
+     ********************/
+    function openFeedback() {
+      document.getElementById('feedbackModal').classList.remove('hidden');
+    }
+    function closeFeedback() {
+      document.getElementById('feedbackModal').classList.add('hidden');
+    }
+    document.getElementById('submitFeedback').addEventListener('click', function() {
+      const text = document.getElementById('feedbackText').value;
+      if (text.trim() === '') {
+        showToast('Please enter your feedback.');
+        return;
+      }
+      showToast('Thank you for your feedback!');
+      document.getElementById('feedbackText').value = '';
+      closeFeedback();
+    });
+    
+    /********************
+     * Save Champion *
+     ********************/
+    function saveChampion(winner) {
+      let champions = JSON.parse(localStorage.getItem('champions')) || [];
+      champions.push({ name: winner.name, timestamp: Date.now(), rounds: tournament.rounds });
+      localStorage.setItem('champions', JSON.stringify(champions));
+      updatePersistentLeaderboard();
+    }
+    
+    /********************
+     * Return Home *
+     ********************/
+    function returnHome() {
+      location.reload();
+    }
+    
+    // Initially display the setup container and update the persistent leaderboard.
     document.getElementById('setup').classList.remove('hidden');
+    updatePersistentLeaderboard();
   </script>
 </body>
 </html>
