@@ -8,7 +8,7 @@
   <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 
-<link rel="icon" type="image/png" href="assets/icons/favicon.png">
+  <link rel="icon" type="image/png" href="assets/icons/favicon.png">
 
   <style>
     /* ========================================================
@@ -146,6 +146,16 @@
     }
     h1 { font-size: 3em; }
     
+#leagueTitle {
+  text-align: left;    /* Overrides the center alignment */
+  margin-top: 45px;    /* Adjust the top margin */
+  margin-bottom: 10px; /* Adjust the bottom margin */
+  /* You can add any other custom styles here */
+}
+
+
+
+
     /* ========================================================
        Global Leaderboard Section (Setup Page)
     ======================================================== */
@@ -363,7 +373,7 @@
     }
     @keyframes glowChampion { from { text-shadow: 0 0 10px var(--gold); } to { text-shadow: 0 0 35px var(--gold); } }
     .trophy {
-      position: absolute; top: -60px; left: 50%;
+      position: absolute; top: -15px; left: 50%;
       transform: translateX(-50%); width: 100px;
       opacity: 0; animation: trophyAppear 1s forwards;
     }
@@ -580,6 +590,15 @@
       <label>Number of Teams:
         <input type="number" id="leagueTeamCount" value="4" min="2" max="20" />
       </label>
+      <div style="margin-top: 10px;">
+        <label>League Format:</label>
+        <label style="margin-left: 10px;">
+          <input type="radio" name="leagueFormat" value="home" checked> Home
+        </label>
+        <label style="margin-left: 10px;">
+          <input type="radio" name="leagueFormat" value="homeAndAway"> Home and Away
+        </label>
+      </div>
       <button onclick="generateLeagueTeams()">Generate League Teams</button>
       <!-- Container for generated league team inputs -->
       <div id="leagueTeamsContainer"></div>
@@ -611,7 +630,7 @@
   <!-- CHAMPION DISPLAY (for Knockout mode) -->
   <div class="container hidden" id="championDisplay">
     <h2>CHAMPION OF EUROPE</h2>
-    <img src="assets/images/trophy.png" alt="Trophy" class="trophy">
+    <img src="assets/icons/favicon.png" alt="Trophy" class="trophy">
     <div id="champion"></div>
     <div id="championBracket"></div>
     <!-- Knockout Tournament Leaderboard -->
@@ -1000,6 +1019,11 @@
       });
       if (teams.length < 2) { showToast("At least 2 teams are required for league mode."); return; }
       tournament.totalTeams = teams.length;
+      
+      // Read the league format option ("home" or "homeAndAway")
+      let format = document.querySelector('input[name="leagueFormat"]:checked').value;
+      tournament.leagueFormat = format;
+      
       initializeLeague(teams);
       document.getElementById('setup').classList.add('hidden');
       document.getElementById('league').classList.remove('hidden');
@@ -1035,6 +1059,16 @@
         }
         rounds.push({ matches: matches });
         teamsList.splice(1, 0, teamsList.pop());
+      }
+      // If the user selected "Home and Away", duplicate the rounds with reversed fixtures.
+      if (tournament.leagueFormat === "homeAndAway") {
+        let reverseRounds = rounds.map(round => {
+          let reverseMatches = round.matches.map(match => {
+            return { team1: match.team2, team2: match.team1, winner: null, result: null };
+          });
+          return { matches: reverseMatches };
+        });
+        rounds = rounds.concat(reverseRounds);
       }
       return rounds;
     }
@@ -1197,7 +1231,7 @@
       let finalDiv = document.getElementById('leagueFinal');
       finalDiv.innerHTML = `<h2>League Champion: ${champion.name}</h2>
                             <p>Played: ${champion.played} | Wins: ${champion.wins} | Draws: ${champion.draws} | Losses: ${champion.losses} | Points: ${champion.points}</p>
-                            <img src="assets/images/trophy.png" alt="Trophy" class="trophy">`;
+                            <img src="assets/icons/favicon.png" alt="Trophy" class="trophy">`;
       finalDiv.classList.remove('hidden');
       document.getElementById('finalSound').play().catch(err => console.error("Final sound error:", err));
       createConfetti();
@@ -1531,6 +1565,8 @@
       closeFeedback();
     });
     
+
+
     /**************************
      * Adjust Positions *
      **************************/
@@ -1557,93 +1593,118 @@
           const matchHeight = currMatches[j].offsetHeight;
           currMatches[j].style.position = "absolute";
           currMatches[j].style.top = (desiredCenter - matchHeight / 2) + "px";
-          currMatches[j].style.left = "0";
         }
       }
     }
+
+
+/*************************************
+ * Global Leaderboard Record Viewer
+ *************************************/
+function showChampionRecordByName(name, timestamp) {
+  let champions = JSON.parse(localStorage.getItem('champions')) || [];
+  let record = champions.find(rec => rec.name === name && rec.timestamp == timestamp);
+  if (!record) {
+    showToast("Record not found.");
+    return;
+  }
+  // Hide all primary containers
+  document.getElementById('setup').classList.add('hidden');
+  document.getElementById('tournament').classList.add('hidden');
+  document.getElementById('league').classList.add('hidden');
+  document.getElementById('championDisplay').classList.add('hidden');
+  
+  if(record.mode === 'knockout'){
+    // Load Knockout Champion Display
+    document.getElementById('championDisplay').classList.remove('hidden');
     
-    /*************************************
-     * Global Leaderboard Record Viewer
-     *************************************/
-    function showChampionRecordByName(name, timestamp) {
-      let champions = JSON.parse(localStorage.getItem('champions')) || [];
-      let record = champions.find(rec => rec.name === name && rec.timestamp == timestamp);
-      if (!record) {
-        showToast("Record not found.");
-        return;
-      }
-      // Hide all primary containers
-      document.getElementById('setup').classList.add('hidden');
-      document.getElementById('tournament').classList.add('hidden');
-      document.getElementById('league').classList.add('hidden');
-      document.getElementById('championDisplay').classList.add('hidden');
-      
-      if(record.mode === 'knockout'){
-        // Load Knockout Champion Display
-        document.getElementById('championDisplay').classList.remove('hidden');
-        let winner = { name: record.name, photo: record.photo };
-        document.getElementById('champion').innerHTML = renderTeam(winner, "final-winner");
-        renderChampionBracketFromRecord(record);
-      } else if(record.mode === 'league'){
-        // Load League View (schedule, table, champion)
-        document.getElementById('league').classList.remove('hidden');
-        tournament.rounds = record.rounds;
-        leagueStandings = record.table;
-        tournament.totalTeams = Object.keys(leagueStandings).length;
-        renderLeagueSchedule();
-        updateLeagueTable();
-        let teams = [];
-        for(let team in leagueStandings){
-          teams.push({ name: team, ...leagueStandings[team] });
-        }
-        teams.sort((a,b)=> (b.points - a.points) || (b.wins - a.wins));
-        let champion = teams[0];
-        let finalDiv = document.getElementById('leagueFinal');
-        finalDiv.innerHTML = `<h2>League Champion: ${champion.name}</h2>
-                              <p>Played: ${champion.played} | Wins: ${champion.wins} | Draws: ${champion.draws} | Losses: ${champion.losses} | Points: ${champion.points}</p>
-                              <img src="assets/images/trophy.png" alt="Trophy" class="trophy">`;
-        finalDiv.classList.remove('hidden');
-      }
+    // Update (or add) the favicon image in the same position as the trophy.
+    // (This assumes you want to use the favicon instead of the trophy for knockout records.)
+    const trophyImg = document.querySelector('#championDisplay .trophy');
+    if(trophyImg) {
+      trophyImg.src = 'assets/icons/favicon.png';
+      trophyImg.alt = 'Favicon';
+    } else {
+      // In case the image element is missing, insert it at the beginning.
+      document.getElementById('championDisplay').insertAdjacentHTML('afterbegin', '<img src="assets/icons/favicon.png" alt="Favicon" class="trophy">');
     }
     
-    function renderChampionBracketFromRecord(record) {
-      const championBracket = document.getElementById('championBracket');
-      championBracket.innerHTML = '';
-      record.rounds.forEach((round, roundIndex) => {
-        const roundDiv = document.createElement('div');
-        roundDiv.className = 'bracket-round';
-        roundDiv.innerHTML = `<h3>${getRoundName(round.matches.length * 2)}</h3>`;
-        round.matches.forEach(match => {
-          const matchDiv = document.createElement('div');
-          matchDiv.className = 'match';
-          const teamsContainer = document.createElement('div');
-          teamsContainer.className = 'teams';
-          const team1Div = document.createElement('div');
-          team1Div.innerHTML = renderTeam(match.team1, (match.team1.name === (match.winner ? match.winner.name : '')) ? "final-winner" : "loser");
-          const team2Div = document.createElement('div');
-          team2Div.innerHTML = renderTeam(match.team2, (match.team2.name === (match.winner ? match.winner.name : '')) ? "final-winner" : "loser");
-          const vsText = document.createElement('div');
-          vsText.textContent = " vs ";
-          vsText.style.margin = "0 5px";
-          teamsContainer.appendChild(team1Div);
-          teamsContainer.appendChild(vsText);
-          teamsContainer.appendChild(team2Div);
-          matchDiv.appendChild(teamsContainer);
-          if (roundIndex < record.rounds.length - 1) {
-            const connectors = document.createElement('div');
-            connectors.className = 'connectors';
-            connectors.innerHTML = `<div class="connector top"></div><div class="connector bottom"></div>`;
-            matchDiv.appendChild(connectors);
-          }
-          roundDiv.appendChild(matchDiv);
-        });
-        championBracket.appendChild(roundDiv);
-      });
-      adjustPositions(championBracket);
+    let winner = { name: record.name, photo: record.photo };
+    document.getElementById('champion').innerHTML = renderTeam(winner, "final-winner");
+    renderChampionBracketFromRecord(record);
+
+  } else if(record.mode === 'league'){
+    // Load League View (schedule, table, champion)
+    document.getElementById('league').classList.remove('hidden');
+    tournament.rounds = record.rounds;
+    leagueStandings = record.table;
+    tournament.totalTeams = Object.keys(leagueStandings).length;
+    renderLeagueSchedule();
+    updateLeagueTable();
+    let teams = [];
+    for(let team in leagueStandings){
+      teams.push({ name: team, ...leagueStandings[team] });
     }
+    teams.sort((a,b)=> (b.points - a.points) || (b.wins - a.wins));
+    let champion = teams[0];
+    let finalDiv = document.getElementById('leagueFinal');
+    finalDiv.innerHTML = `<h2>League Champion: ${champion.name}</h2>
+                          <p>Played: ${champion.played} | Wins: ${champion.wins} | Draws: ${champion.draws} | Losses: ${champion.losses} | Points: ${champion.points}</p>
+                          <img src="assets/icons/favicon.png" alt="Favicon" class="trophy">`;
+    finalDiv.classList.remove('hidden');
+  }
+}
+
+function renderChampionBracketFromRecord(record) {
+  const championBracket = document.getElementById('championBracket');
+  championBracket.innerHTML = '';
+  record.rounds.forEach((round, roundIndex) => {
+    const roundDiv = document.createElement('div');
+    roundDiv.className = 'bracket-round';
+    roundDiv.innerHTML = `<h3>${getRoundName(round.matches.length * 2)}</h3>`;
+    round.matches.forEach(match => {
+      const matchDiv = document.createElement('div');
+      matchDiv.className = 'match';
+      const teamsContainer = document.createElement('div');
+      teamsContainer.className = 'teams';
+      const team1Div = document.createElement('div');
+      team1Div.innerHTML = renderTeam(match.team1, (match.team1.name === (match.winner ? match.winner.name : '')) ? "final-winner" : "loser");
+      const team2Div = document.createElement('div');
+      team2Div.innerHTML = renderTeam(match.team2, (match.team2.name === (match.winner ? match.winner.name : '')) ? "final-winner" : "loser");
+      const vsText = document.createElement('div');
+      vsText.textContent = " vs ";
+      vsText.style.margin = "0 5px";
+      teamsContainer.appendChild(team1Div);
+      teamsContainer.appendChild(vsText);
+      teamsContainer.appendChild(team2Div);
+      matchDiv.appendChild(teamsContainer);
+      if (roundIndex < record.rounds.length - 1) {
+        const connectors = document.createElement('div');
+        connectors.className = 'connectors';
+        connectors.innerHTML = `<div class="connector top"></div><div class="connector bottom"></div>`;
+        matchDiv.appendChild(connectors);
+      }
+      roundDiv.appendChild(matchDiv);
+    });
+    championBracket.appendChild(roundDiv);
+  });
+  adjustPositions(championBracket);
+}
     
-    // On page load, update the persistent leaderboard from localStorage
-    window.addEventListener('load', updatePersistentLeaderboard);
+// On page load, update the persistent leaderboard from localStorage
+window.addEventListener('load', updatePersistentLeaderboard);
+
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
   </script>
 </body>
 </html>
