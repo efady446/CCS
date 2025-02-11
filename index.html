@@ -354,17 +354,32 @@
        Champion Display & Trophy Animation
     ======================================================== */
     #championDisplay {
-      background: url('assets/images/champion_cup.jpg') no-repeat center center/cover;
-      position: relative; animation: bgFade 3s ease-in-out;
-      padding: 80px 60px; border: 4px solid var(--gold);
-      text-shadow: 0 0 15px var(--gold); overflow: hidden;
-    }
-    #championDisplay::before {
-      content: ""; position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.6) 100%);
-      opacity: 0.5; animation: pulse 3s infinite alternate; z-index: -1;
-    }
+  position: relative;
+  /* No background image here */
+  padding: 80px 60px;
+  border: 4px solid var(--gold);
+  text-shadow: 0 0 15px var(--gold);
+  overflow: hidden;
+}
+
+/* Create a pseudo-element for the champion cup image */
+#championDisplay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('assets/icons/champion_cup.jpg') no-repeat center center/cover;
+  opacity: 0;  /* Start fully transparent */
+  animation: cupFadeIn 2s ease-in-out forwards;
+  z-index: -1; /* Ensure it's behind the content */
+}
+
+@keyframes cupFadeIn {
+  from { opacity: 0; }
+  to { opacity: 0.35; }
+}
     @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
     @keyframes bgFade { from { filter: brightness(0.65); } to { filter: brightness(1); } }
     #champion {
@@ -436,12 +451,35 @@
     /* ========================================================
        League Mode Container
     ======================================================== */
-    #league {
-      width: 1200px; margin: 120px auto 80px; padding: 40px 60px;
-      background: var(--container-bg); border-radius: 12px;
-      border: 4px solid var(--gold); box-shadow: 0 0 40px rgba(0,0,0,0.95);
-      position: relative; z-index: 2; animation: fadeIn 1.5s ease-out;
-    }
+  #league {
+  width: 1200px;
+  margin: 120px auto 80px;
+  padding: 40px 60px;
+  /* Remove the background image here */
+  background: transparent;
+  border-radius: 12px;
+  border: 4px solid var(--gold);
+  box-shadow: 0 0 40px rgba(0,0,0,0.95);
+  position: relative;
+  z-index: 2;
+  animation: fadeIn 1.5s ease-out;
+}
+
+/* Pseudo-element for the background image */
+#league::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('assets/icons/themeL.WEBP') no-repeat center center/cover;
+  opacity: 0.5; /* Set desired opacity here (0 to 1) */
+  z-index: -1;  /* Ensures it stays behind the content */
+}
+
+
+
     #league h2 { text-align: center; margin-bottom: 20px; text-shadow: 0 0 15px var(--gold); }
     #leagueSchedule, #leagueTable, #leagueFinal, #leagueLeaderboard { margin-bottom: 20px; }
     #finishLeagueBtn { margin: 20px auto; display: block; }
