@@ -103,6 +103,10 @@
       z-index: -5;
     }
     
+
+
+
+
     /* ========================================================
        Mute/Unmute & Theme Toggle Buttons
     ======================================================== */
@@ -152,6 +156,128 @@
   margin-bottom: 10px; /* Adjust the bottom margin */
   /* You can add any other custom styles here */
 }
+
+
+/* Style for the Undo button in league mode */
+.league-undo-btn {
+  background: linear-gradient(45deg, #ff5f6d, #ffc371);
+  border: none;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.league-undo-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Optional: Ensure result buttons have a basic style */
+.league-result-btn {
+  background: #222;
+  color: #fff;
+  border: 2px solid var(--gold);
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.league-result-btn:hover {
+  transform: translateY(-2px);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ---------------------------
+   Enhanced Icon Bar (Horizontal & Scrollable)
+---------------------------- */
+.icon-bar {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+  scroll-behavior: smooth;
+}
+
+/* ---------------------------
+   Icon Option Styles & Animations
+---------------------------- */
+/* Redesigned Icon Bar */
+.icon-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px;
+  background: linear-gradient(45deg, rgba(212,175,55,0.2), rgba(1,33,105,0.2));
+  border: 2px solid var(--gold);
+  border-radius: 30px;
+  overflow-x: auto;
+  box-shadow: 0 0 10px rgba(212,175,55, 0.3);
+  animation: pulseBackground 5s infinite alternate;
+}
+
+@keyframes pulseBackground {
+  0% { filter: brightness(0.9); }
+  100% { filter: brightness(1.1); }
+}
+
+.icon-option {
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+  border: 2px solid transparent;
+  border-radius: 100%;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.icon-option:hover {
+  transform: scale(1.2);
+  border-color: var(--gold);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.icon-option.selected {
+  border-color: var(--gold);
+  transform: scale(1.3);
+  box-shadow: 0 0 20px var(--gold);
+}
+
+
+/* ---------------------------
+   Team Icon Style (Used When an Icon is Selected)
+---------------------------- */
+.team-icon {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+
+
+
 
 
 
@@ -473,7 +599,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('assets/icons/themeL.webp') no-repeat center center/cover;
+  background: url('assets/icons/themeL.WEBP') no-repeat center center/cover;
   opacity: 0.5; /* Set desired opacity here (0 to 1) */
   z-index: -1;  /* Ensures it stays behind the content */
 }
@@ -727,33 +853,66 @@
       }
     }
     
-    /*********************
-     * Audio & Mute Control *
-     *********************/
-    const muteBtn = document.getElementById('muteBtn');
-    muteBtn.addEventListener('click', () => {
-      const bgSound = document.getElementById('bgSound');
-      bgSound.muted = !bgSound.muted;
-      muteBtn.textContent = bgSound.muted ? '🔇' : '🔊';
-    });
-    let bgSoundPlayed = false;
-    function tryPlayBgSound() {
-      if (!bgSoundPlayed) {
-        const bgSound = document.getElementById('bgSound');
-        bgSound.play().then(() => { bgSoundPlayed = true; })
-          .catch(err => console.error("Error playing sound:", err));
-      }
+  /*********************
+   * Audio & Mute Control *
+   *********************/
+  const muteBtn = document.getElementById('muteBtn');
+  const bgSound = document.getElementById('bgSound');
+  
+  // On page load, retrieve the stored mute setting (if any)
+  const storedMute = localStorage.getItem('isMuted');
+  if (storedMute !== null) {
+    bgSound.muted = storedMute === 'true'; // stored as string "true" or "false"
+    muteBtn.textContent = bgSound.muted ? '🔇' : '🔊';
+  }
+  
+  // Toggle mute on button click and save the state
+  muteBtn.addEventListener('click', () => {
+    bgSound.muted = !bgSound.muted;
+    muteBtn.textContent = bgSound.muted ? '🔇' : '🔊';
+    localStorage.setItem('isMuted', bgSound.muted);
+  });
+  
+
+
+ // Optionally, if you use tryPlayBgSound (or similar), it will work as before.
+  let bgSoundPlayed = false;
+  function tryPlayBgSound() {
+    if (!bgSoundPlayed) {
+      bgSound.play().then(() => { bgSoundPlayed = true; })
+        .catch(err => console.error("Error playing sound:", err));
     }
-    document.addEventListener('click', tryPlayBgSound, { once: true });
-    
-    /***********************
-     * Theme Toggle Control *
-     ***********************/
-    const themeToggle = document.getElementById('themeToggle');
-    themeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('alternate-mode');
-      themeToggle.textContent = document.body.classList.contains('alternate-mode') ? '🌙' : '⭐';
-    });
+  }
+  document.addEventListener('click', tryPlayBgSound, { once: true });
+
+
+
+
+
+
+  /***********************
+   * Theme Toggle Control *
+   ***********************/
+  const themeToggle = document.getElementById('themeToggle');
+  
+  // On page load, retrieve the stored theme setting (if any)
+  const storedTheme = localStorage.getItem('isAlternateMode');
+  if (storedTheme === 'true') {
+    document.body.classList.add('alternate-mode');
+    themeToggle.textContent = '🌙';
+  } else {
+    document.body.classList.remove('alternate-mode');
+    themeToggle.textContent = '⭐';
+  }
+  
+  // Toggle the alternate mode on button click and save the state
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('alternate-mode');
+    const isAlternate = document.body.classList.contains('alternate-mode');
+    themeToggle.textContent = isAlternate ? '🌙' : '⭐';
+    localStorage.setItem('isAlternateMode', isAlternate);
+  });
+  
     
     /*********************
      * Toast Notifications *
@@ -769,64 +928,124 @@
     /*********************
      * Rendering Helpers *
      *********************/
-    function renderTeam(team, status) {
-      let extraClass = (status === "draw") ? "draw" : "";
-      let boardClass = "";
-      if (status === "winner" || status === "final-winner") boardClass = "winner-board";
-      else if (status === "loser") boardClass = "loser-board";
-      return `
-        <div class="team-block ${status === 'final-winner' ? 'final-winner' : ''} ${boardClass} ${extraClass}">
-          ${team.photo ? `<img src="${team.photo}" class="team-photo" alt="${team.name} Logo">` : ''}
-          <div class="team-name ${status ? 'text-' + status : ''}">${team.name}</div>
-        </div>
-      `;
-    }
+function renderTeam(team, status) {
+  let extraClass = (status === "draw") ? "draw" : "";
+  let boardClass = "";
+  if (status === "winner" || status === "final-winner") boardClass = "winner-board";
+  else if (status === "loser") boardClass = "loser-board";
+  
+  // Use team.icon if available; otherwise, use team.photo.
+  let imgHtml = "";
+  if (team.icon) {
+    imgHtml = `<img src="${team.icon}" class="team-icon" alt="${team.name} Icon">`;
+  } else if (team.photo) {
+    imgHtml = `<img src="${team.photo}" class="team-photo" alt="${team.name} Logo">`;
+  }
+  
+  return `
+    <div class="team-block ${status === 'final-winner' ? 'final-winner' : ''} ${boardClass} ${extraClass}">
+      ${imgHtml}
+      <div class="team-name ${status ? 'text-' + status : ''}">${team.name}</div>
+    </div>
+  `;
+}
+
+
     
     /********************
      * Knockout Mode Functions *
      ********************/
-    function generateKnockdownTeams() {
-      let count = parseInt(document.getElementById('teamCount').value);
-      tournament.totalTeams = count;
-      let container = document.getElementById('teamInputs');
-      container.innerHTML = '';
-      document.getElementById('manualPairingContainer').classList.add('hidden');
-      for (let i = 0; i < count; i++) {
-        let div = document.createElement('div');
-        div.className = 'team-input';
-        let nameInput = document.createElement('input');
-        nameInput.type = 'text';
-        nameInput.placeholder = `Knockdown ${i+1} Name`;
-        nameInput.required = true;
-        nameInput.value = `Knockdown ${i+1}`;
-        div.appendChild(nameInput);
-        let photoInput = document.createElement('input');
-        photoInput.type = 'file';
-        photoInput.accept = 'image/*';
-        photoInput.style.cursor = 'pointer';
-        photoInput.addEventListener('change', function(event) {
-          const file = event.target.files[0];
-          if(file){
-            const reader = new FileReader();
-            reader.onload = function(e){ photoInput.dataset.photo = e.target.result; }
-            reader.readAsDataURL(file);
-          }
-        });
-        div.appendChild(photoInput);
-        container.appendChild(div);
+function generateKnockdownTeams() {
+  let count = parseInt(document.getElementById('teamCount').value);
+  tournament.totalTeams = count;
+  let container = document.getElementById('teamInputs');
+  container.innerHTML = '';
+  document.getElementById('manualPairingContainer').classList.add('hidden');
+
+  // Extend this array with as many icon image paths as you want
+  const iconOptions = [
+    "assets/icons/icon1.png",
+    "assets/icons/icon2.png",
+    "assets/icons/icon3.png",
+    "assets/icons/icon4.png",
+    "assets/icons/icon5.png",
+    "assets/icons/icon6.png"
+  ];
+
+  for (let i = 0; i < count; i++) {
+    let div = document.createElement('div');
+    div.className = 'team-input';
+
+    // Create the team name input
+    let nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = `Team ${i+1} Name`;
+    nameInput.required = true;
+    nameInput.value = `Team ${i+1}`;
+    div.appendChild(nameInput);
+
+    // Create the file input for uploading a picture
+    let photoInput = document.createElement('input');
+    photoInput.type = 'file';
+    photoInput.accept = 'image/*';
+    photoInput.style.cursor = 'pointer';
+    photoInput.addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if(file){
+        const reader = new FileReader();
+        reader.onload = function(e){ 
+          // Store the uploaded image data
+          photoInput.dataset.photo = e.target.result;
+          // (Optional) You can decide whether to clear the icon selection:
+          // In this example, we leave the icon selection intact so the icon stays visible.
+          // If you want to override the icon when a file is uploaded, you can uncomment:
+          // delete photoInput.dataset.icon;
+        }
+        reader.readAsDataURL(file);
       }
-      document.getElementById('startBtn').classList.remove('hidden');
-    }
-    
+    });
+    div.appendChild(photoInput);
+
+    // Create a horizontal, animated icon bar
+    let iconBar = document.createElement('div');
+    iconBar.className = 'icon-bar';
+    iconOptions.forEach(iconPath => {
+      let iconImg = document.createElement('img');
+      iconImg.src = iconPath;
+      iconImg.className = 'icon-option';
+      iconImg.title = 'Select this icon';
+      iconImg.addEventListener('click', function() {
+        // Remove "selected" styling from all icons in this bar
+        Array.from(iconBar.children).forEach(child => child.classList.remove('selected'));
+        // Add the "selected" class to the clicked icon
+        iconImg.classList.add('selected');
+        // Save the chosen icon in the file input's dataset
+        photoInput.dataset.icon = iconPath;
+        // (Optional) If you want to clear any uploaded file when an icon is selected, uncomment:
+        // photoInput.value = "";
+        // delete photoInput.dataset.photo;
+      });
+      iconBar.appendChild(iconImg);
+    });
+    div.appendChild(iconBar);
+
+    container.appendChild(div);
+  }
+  document.getElementById('startBtn').classList.remove('hidden');
+}
+ 
     function startTournament() {
-      if (tournament.mode !== "knockout") return;
-      let teamDivs = Array.from(document.querySelectorAll('#teamInputs .team-input'));
-      let teams = teamDivs.map(div => {
-        let inputs = div.querySelectorAll('input');
-        let name = inputs[0].value.trim();
-        let photo = inputs[1].dataset.photo ? inputs[1].dataset.photo.trim() : "";
-        if (!name) throw new Error("Please fill in all team names.");
-        return { name, photo };
+  if (tournament.mode !== "knockout") return;
+  let teamDivs = Array.from(document.querySelectorAll('#teamInputs .team-input'));
+  let teams = teamDivs.map(div => {
+    let name = div.querySelector('input[type="text"]').value.trim();
+    // Get the photo or icon from the file input dataset
+    let photoInput = div.querySelector('input[type="file"]');
+    let icon = photoInput.dataset.icon || "";
+    let photo = photoInput.dataset.photo || "";
+    if (!name) throw new Error("Please fill in all team names.");
+    return { name, photo, icon };
+ 
       });
       if(new Set(teams.map(t => t.name)).size !== teams.length)
         throw new Error("Team names must be unique.");
@@ -1015,60 +1234,107 @@
     /********************
      * League Mode Functions *
      ********************/
-    function generateLeagueTeams() {
-      let count = parseInt(document.getElementById('leagueTeamCount').value);
-      let container = document.getElementById('leagueTeamsContainer');
-      container.innerHTML = '';
-      for (let i = 0; i < count; i++) {
-        let div = document.createElement('div');
-        div.className = 'team-input';
-        let nameInput = document.createElement('input');
-        nameInput.type = 'text';
-        nameInput.placeholder = `Knockdown ${i+1} Name`;
-        nameInput.required = true;
-        nameInput.value = `Knockdown ${i+1}`;
-        div.appendChild(nameInput);
-        let photoInput = document.createElement('input');
-        photoInput.type = 'file';
-        photoInput.accept = 'image/*';
-        photoInput.style.cursor = 'pointer';
-        photoInput.addEventListener('change', function(event) {
-          const file = event.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e){ photoInput.dataset.photo = e.target.result; }
-            reader.readAsDataURL(file);
-          }
-        });
-        div.appendChild(photoInput);
-        container.appendChild(div);
+function generateLeagueTeams() {
+  let count = parseInt(document.getElementById('leagueTeamCount').value);
+  let container = document.getElementById('leagueTeamsContainer');
+  container.innerHTML = '';
+
+  // Extend this array with as many icons as you want
+  const iconOptions = [
+    "assets/icons/icon1.png",
+    "assets/icons/icon2.png",
+    "assets/icons/icon3.png",
+    "assets/icons/icon4.png",
+    "assets/icons/icon5.png",
+    "assets/icons/icon6.png"
+  ];
+
+  for (let i = 0; i < count; i++) {
+    let div = document.createElement('div');
+    div.className = 'team-input';
+
+    // Create the team name input
+    let nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = `Team ${i+1} Name`;
+    nameInput.required = true;
+    nameInput.value = `Team ${i+1}`;
+    div.appendChild(nameInput);
+
+    // Create the file input for uploading a picture
+    let photoInput = document.createElement('input');
+    photoInput.type = 'file';
+    photoInput.accept = 'image/*';
+    photoInput.style.cursor = 'pointer';
+    photoInput.addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          photoInput.dataset.photo = e.target.result;
+          // (Optional) Do not clear the icon selection so it remains visible:
+          // delete photoInput.dataset.icon;
+        }
+        reader.readAsDataURL(file);
       }
-    }
-    
-    function startLeagueMode() {
-      let container = document.getElementById('leagueTeamsContainer');
-      let teamDivs = Array.from(container.getElementsByClassName('team-input'));
-      let teams = [];
-      teamDivs.forEach(div => {
-        let name = div.querySelector('input[type="text"]').value.trim();
-        let photo = div.querySelector('input[type="file"]').dataset.photo || "";
-        if (!name) { showToast("Please fill in all team names."); return; }
-        teams.push({ name, photo });
+    });
+    div.appendChild(photoInput);
+
+    // Create a horizontal, animated icon bar
+    let iconBar = document.createElement('div');
+    iconBar.className = 'icon-bar';
+    iconOptions.forEach(iconPath => {
+      let iconImg = document.createElement('img');
+      iconImg.src = iconPath;
+      iconImg.className = 'icon-option';
+      iconImg.title = 'Select this icon';
+      iconImg.addEventListener('click', function() {
+        Array.from(iconBar.children).forEach(child => child.classList.remove('selected'));
+        iconImg.classList.add('selected');
+        photoInput.dataset.icon = iconPath;
+        // (Optional) If you want to clear any file upload when an icon is chosen:
+        // photoInput.value = "";
+        // delete photoInput.dataset.photo;
       });
-      if (teams.length < 2) { showToast("At least 2 teams are required for league mode."); return; }
-      tournament.totalTeams = teams.length;
-      
-      // Read the league format option ("home" or "homeAndAway")
-      let format = document.querySelector('input[name="leagueFormat"]:checked').value;
-      tournament.leagueFormat = format;
-      
-      initializeLeague(teams);
-      document.getElementById('setup').classList.add('hidden');
-      document.getElementById('league').classList.remove('hidden');
-      renderLeagueSchedule();
-      updateLeagueTable();
-      adjustLeagueRounds();
+      iconBar.appendChild(iconImg);
+    });
+    div.appendChild(iconBar);
+
+    container.appendChild(div);
+  }
+}
+    
+   function startLeagueMode() {
+  let container = document.getElementById('leagueTeamsContainer');
+  let teamDivs = Array.from(container.getElementsByClassName('team-input'));
+  let teams = [];
+  teamDivs.forEach(div => {
+    let name = div.querySelector('input[type="text"]').value.trim();
+    let photoInput = div.querySelector('input[type="file"]');
+    // Get the selected icon (if any) or the uploaded photo
+    let icon = photoInput.dataset.icon || "";
+    let photo = photoInput.dataset.photo || "";
+    if (!name) { 
+      showToast("Please fill in all team names."); 
+      return; 
     }
+    teams.push({ name, photo, icon });
+  });
+  if (teams.length < 2) { 
+    showToast("At least 2 teams are required for league mode."); 
+    return; 
+  }
+  tournament.totalTeams = teams.length;
+  
+  // (Additional logic to initialize and start league mode remains unchanged)
+  initializeLeague(teams);
+  document.getElementById('setup').classList.add('hidden');
+  document.getElementById('league').classList.remove('hidden');
+  renderLeagueSchedule();
+  updateLeagueTable();
+  adjustLeagueRounds();
+}
+
     
     function initializeLeague(teams) {
       tournament.rounds = generateLeagueSchedule(teams);
@@ -1112,65 +1378,147 @@
     }
     
     function renderLeagueSchedule() {
-      const scheduleDiv = document.getElementById('leagueSchedule');
-      scheduleDiv.innerHTML = "";
-      tournament.rounds.forEach((round, roundIndex) => {
-        let roundDiv = document.createElement('div');
-        roundDiv.className = 'bracket-round';
-        roundDiv.innerHTML = `<h3>Round ${roundIndex + 1}</h3>`;
-        round.matches.forEach((match, matchIndex) => {
-          let matchDiv = document.createElement('div');
-          matchDiv.className = 'match';
-          let teamsContainer = document.createElement('div');
-          teamsContainer.className = 'teams';
-          if (!match.result) {
-            let team1Btn = document.createElement('button');
-            team1Btn.textContent = match.team1.name;
-            team1Btn.onclick = () => selectLeagueResult(roundIndex, matchIndex, "win", match.team1);
-            team1Btn.className = 'league-result-btn' + (tournament.totalTeams > 8 ? ' small' : '');
-            let drawBtn = document.createElement('button');
-            drawBtn.textContent = "Draw";
-            drawBtn.onclick = () => selectLeagueResult(roundIndex, matchIndex, "draw");
-            drawBtn.className = 'league-result-btn' + (tournament.totalTeams > 8 ? ' small' : '');
-            let team2Btn = document.createElement('button');
-            team2Btn.textContent = match.team2.name;
-            team2Btn.onclick = () => selectLeagueResult(roundIndex, matchIndex, "win", match.team2);
-            team2Btn.className = 'league-result-btn' + (tournament.totalTeams > 8 ? ' small' : '');
-            teamsContainer.appendChild(team1Btn);
-            teamsContainer.appendChild(drawBtn);
-            teamsContainer.appendChild(team2Btn);
-          } else {
-            if (match.result === "win") {
-              let team1Div = document.createElement('div');
-              team1Div.innerHTML = renderTeam(match.team1, (match.team1.name === match.winner.name) ? "winner" : "loser");
-              let team2Div = document.createElement('div');
-              team2Div.innerHTML = renderTeam(match.team2, (match.team2.name === match.winner.name) ? "winner" : "loser");
-              teamsContainer.appendChild(team1Div);
-              let vsText = document.createElement('div');
-              vsText.textContent = " vs ";
-              vsText.style.margin = "0 5px";
-              teamsContainer.appendChild(vsText);
-              teamsContainer.appendChild(team2Div);
-            } else if (match.result === "draw") {
-              let team1Div = document.createElement('div');
-              team1Div.innerHTML = renderTeam(match.team1, "draw");
-              let team2Div = document.createElement('div');
-              team2Div.innerHTML = renderTeam(match.team2, "draw");
-              teamsContainer.appendChild(team1Div);
-              let vsText = document.createElement('div');
-              vsText.textContent = " vs ";
-              vsText.style.margin = "0 5px";
-              teamsContainer.appendChild(vsText);
-              teamsContainer.appendChild(team2Div);
-            }
+  const scheduleDiv = document.getElementById('leagueSchedule');
+  scheduleDiv.innerHTML = "";
+
+  tournament.rounds.forEach((round, roundIndex) => {
+    let roundDiv = document.createElement('div');
+    roundDiv.className = 'bracket-round';
+    roundDiv.innerHTML = `<h3>Round ${roundIndex + 1}</h3>`;
+
+    round.matches.forEach((match, matchIndex) => {
+      let matchDiv = document.createElement('div');
+      matchDiv.className = 'match';
+      let teamsContainer = document.createElement('div');
+      teamsContainer.className = 'teams';
+
+      // Create result buttons
+   
+       let team1Btn = document.createElement('button');
+team1Btn.className = 'league-result-btn' + (tournament.totalTeams > 8 ? ' small' : '');
+team1Btn.onclick = () => selectLeagueResult(roundIndex, matchIndex, "win", match.team1);
+
+let team1Content = "";
+if (match.team1.icon) {
+  team1Content = `<img src="${match.team1.icon}" alt="${match.team1.name} icon" style="width:24px; height:24px; border-radius:50%; margin-right:5px;">`;
+} else if (match.team1.photo) {
+  team1Content = `<img src="${match.team1.photo}" alt="${match.team1.name} photo" style="width:24px; height:24px; border-radius:50%; margin-right:5px;">`;
+}
+team1Content += match.team1.name;
+team1Btn.innerHTML = team1Content;
+
+
+
+      team1Btn.className = 'league-result-btn' + (tournament.totalTeams > 8 ? ' small' : '');
+      team1Btn.onclick = () => selectLeagueResult(roundIndex, matchIndex, "win", match.team1);
+
+      let drawBtn = document.createElement('button');
+      drawBtn.textContent = "Draw";
+      drawBtn.className = 'league-result-btn' + (tournament.totalTeams > 8 ? ' small' : '');
+      drawBtn.onclick = () => selectLeagueResult(roundIndex, matchIndex, "draw");
+
+
+let team2Btn = document.createElement('button');
+team2Btn.className = 'league-result-btn' + (tournament.totalTeams > 8 ? ' small' : '');
+team2Btn.onclick = () => selectLeagueResult(roundIndex, matchIndex, "win", match.team2);
+
+let team2Content = "";
+if (match.team2.icon) {
+  team2Content = `<img src="${match.team2.icon}" alt="${match.team2.name} icon" style="width:24px; height:24px; border-radius:50%; margin-right:5px;">`;
+} else if (match.team2.photo) {
+  team2Content = `<img src="${match.team2.photo}" alt="${match.team2.name} photo" style="width:24px; height:24px; border-radius:50%; margin-right:5px;">`;
+}
+team2Content += match.team2.name;
+team2Btn.innerHTML = team2Content;
+
+
+
+      team2Btn.className = 'league-result-btn' + (tournament.totalTeams > 8 ? ' small' : '');
+      team2Btn.onclick = () => selectLeagueResult(roundIndex, matchIndex, "win", match.team2);
+
+      // Apply color theming if a result is set
+      if (match.result) {
+        if (match.result === "win") {
+          // Set winner (green) and loser (red)
+          if (match.winner && match.team1.name === match.winner.name) {
+            team1Btn.style.backgroundColor = "#00ff00"; // green
+            team2Btn.style.backgroundColor = "#ff0000"; // red
+          } else if (match.winner && match.team2.name === match.winner.name) {
+            team2Btn.style.backgroundColor = "#00ff00";
+            team1Btn.style.backgroundColor = "#ff0000";
           }
-          matchDiv.appendChild(teamsContainer);
-          roundDiv.appendChild(matchDiv);
-        });
-        scheduleDiv.appendChild(roundDiv);
-      });
-      adjustLeagueRounds();
-    }
+        } else if (match.result === "draw") {
+          drawBtn.style.backgroundColor = "#888888"; // grey for draw
+        }
+      }
+
+      teamsContainer.appendChild(team1Btn);
+      teamsContainer.appendChild(drawBtn);
+      teamsContainer.appendChild(team2Btn);
+
+      // Add an Undo button if a result exists
+      if (match.result) {
+        let undoBtn = document.createElement('button');
+        undoBtn.textContent = "Undo";
+        undoBtn.className = "league-undo-btn";
+        undoBtn.onclick = () => undoLeagueResult(roundIndex, matchIndex);
+        teamsContainer.appendChild(undoBtn);
+      }
+
+      matchDiv.appendChild(teamsContainer);
+      roundDiv.appendChild(matchDiv);
+    });
+    scheduleDiv.appendChild(roundDiv);
+  });
+  adjustLeagueRounds();
+}
+
+
+
+function undoLeagueResult(roundIndex, matchIndex) {
+  let match = tournament.rounds[roundIndex].matches[matchIndex];
+  
+  // If no result exists, nothing to undo.
+  if (!match.result) return;
+  
+  // Undo the previous result’s impact on leagueStandings.
+  if (match.result === "win") {
+    let prevWinner = match.winner;
+    let prevLoser = (match.team1.name === prevWinner.name) ? match.team2 : match.team1;
+    leagueStandings[prevWinner.name].played--;
+    leagueStandings[prevWinner.name].wins--;
+    leagueStandings[prevWinner.name].points -= 3;
+    leagueStandings[prevLoser.name].played--;
+    leagueStandings[prevLoser.name].losses--;
+  } else if (match.result === "draw") {
+    leagueStandings[match.team1.name].played--;
+    leagueStandings[match.team1.name].draws--;
+    leagueStandings[match.team1.name].points -= 1;
+    leagueStandings[match.team2.name].played--;
+    leagueStandings[match.team2.name].draws--;
+    leagueStandings[match.team2.name].points -= 1;
+  }
+  
+  // Clear the match result.
+  match.result = null;
+  match.winner = null;
+  
+  // Re-render the schedule and update the standings.
+  renderLeagueSchedule();
+  updateLeagueTable();
+}
+
+
+
+
+
+
+
+
+
+
+
+
     
     // Adjust league round widths so they scroll horizontally
     function adjustLeagueRounds() {
@@ -1192,35 +1540,63 @@
       }
     }
     
-    function selectLeagueResult(roundIndex, matchIndex, resultType, winningTeam) {
-      let match = tournament.rounds[roundIndex].matches[matchIndex];
-      if (resultType === "win") {
-        match.result = "win";
-        match.winner = winningTeam;
-        let loser = (match.team1.name === winningTeam.name) ? match.team2 : match.team1;
-        leagueStandings[winningTeam.name].played++;
-        leagueStandings[winningTeam.name].wins++;
-        leagueStandings[winningTeam.name].points += 3;
-        leagueStandings[loser.name].played++;
-        leagueStandings[loser.name].losses++;
-      } else if (resultType === "draw") {
-        match.result = "draw";
-        match.winner = null;
-        leagueStandings[match.team1.name].played++;
-        leagueStandings[match.team1.name].draws++;
-        leagueStandings[match.team1.name].points += 1;
-        leagueStandings[match.team2.name].played++;
-        leagueStandings[match.team2.name].draws++;
-        leagueStandings[match.team2.name].points += 1;
-      }
-      renderLeagueSchedule();
-      updateLeagueTable();
-      if (isLeagueComplete()) {
-        // Remove (hide) the Finish League button once clicked
-        document.getElementById('finishLeagueBtn').classList.remove('hidden');
-      }
+   function selectLeagueResult(roundIndex, matchIndex, resultType, winningTeam) {
+  const leagueFinal = document.getElementById('leagueFinal');
+  if (leagueFinal && !leagueFinal.classList.contains('hidden')) {
+    leagueFinal.classList.add('hidden');
+  }
+  
+  let match = tournament.rounds[roundIndex].matches[matchIndex];
+
+  // If a previous result exists, undo its impact.
+  if (match.result) {
+    if (match.result === "win") {
+      let prevWinner = match.winner;
+      let prevLoser = (match.team1.name === prevWinner.name) ? match.team2 : match.team1;
+      leagueStandings[prevWinner.name].played--;
+      leagueStandings[prevWinner.name].wins--;
+      leagueStandings[prevWinner.name].points -= 3;
+      leagueStandings[prevLoser.name].played--;
+      leagueStandings[prevLoser.name].losses--;
+    } else if (match.result === "draw") {
+      leagueStandings[match.team1.name].played--;
+      leagueStandings[match.team1.name].draws--;
+      leagueStandings[match.team1.name].points -= 1;
+      leagueStandings[match.team2.name].played--;
+      leagueStandings[match.team2.name].draws--;
+      leagueStandings[match.team2.name].points -= 1;
     }
-    
+  }
+
+  // Apply the new result.
+  if (resultType === "win") {
+    match.result = "win";
+    match.winner = winningTeam;
+    let loser = (match.team1.name === winningTeam.name) ? match.team2 : match.team1;
+    leagueStandings[winningTeam.name].played++;
+    leagueStandings[winningTeam.name].wins++;
+    leagueStandings[winningTeam.name].points += 3;
+    leagueStandings[loser.name].played++;
+    leagueStandings[loser.name].losses++;
+  } else if (resultType === "draw") {
+    match.result = "draw";
+    match.winner = null;
+    leagueStandings[match.team1.name].played++;
+    leagueStandings[match.team1.name].draws++;
+    leagueStandings[match.team1.name].points += 1;
+    leagueStandings[match.team2.name].played++;
+    leagueStandings[match.team2.name].draws++;
+    leagueStandings[match.team2.name].points += 1;
+  }
+  
+  renderLeagueSchedule();
+  updateLeagueTable();
+
+  if (isLeagueComplete()) {
+    document.getElementById('finishLeagueBtn').classList.remove('hidden');
+  }
+}
+
     function updateLeagueTable() {
       const tableDiv = document.getElementById('leagueTable');
       let teams = [];
