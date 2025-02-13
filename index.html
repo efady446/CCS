@@ -657,6 +657,82 @@
       font-size: 10px;
       padding: 2px 4px;
     }
+
+
+/* League Schedule Container */
+#leagueSchedule {
+  display: flex;
+  overflow-x: auto;
+  padding: 20px 0;
+  gap: 30px;
+  scroll-behavior: smooth;
+}
+
+/* League Round Styling */
+#leagueSchedule .bracket-round {
+  flex: 0 0 300px;
+  min-width: 300px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  transition: transform 0.3s ease;
+}
+
+#leagueSchedule .bracket-round:hover {
+  transform: translateY(-5px);
+}
+
+/* Match Buttons Container */
+.match .teams {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Responsive Result Buttons */
+.league-result-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-width: 120px;
+  padding: 8px 12px;
+  font-size: 0.9em;
+  transition: all 0.3s ease;
+}
+
+.league-result-btn.small {
+  min-width: 80px;
+  padding: 4px 6px;
+  font-size: 0.8em;
+}
+
+/* Home/Away Indicator */
+.match-home-away {
+  font-size: 0.8em;
+  color: var(--gold);
+  text-align: center;
+  margin-top: 5px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   </style>
 </head>
 <body class="dark-mode">
@@ -783,7 +859,7 @@
     <div id="leagueSchedule"></div>
     <h2>League Table</h2>
     <div id="leagueTable"></div>
-    <button id="finishLeagueBtn" class="hidden" onclick="finishLeague()">Finish League</button>
+    <button id="finishLeagueBtn" class="hidden" onclick="finishLeague()">Save League</button>
     <div id="leagueFinal" class="hidden"></div>
     <!-- League Tournament Leaderboard (Top 3 Teams) -->
     <div id="leagueLeaderboard"></div>
@@ -1072,71 +1148,94 @@ function generateKnockdownTeams() {
     }
     
     function renderBracket() {
-      const bracketDiv = document.getElementById('bracket');
-      bracketDiv.innerHTML = '';
-      tournament.rounds.forEach((round, roundIndex) => {
-        const roundDiv = document.createElement('div');
-        roundDiv.className = 'bracket-round';
-        roundDiv.innerHTML = `<h3>${getRoundName(round.matches.length * 2)}</h3>`;
-        round.matches.forEach((match, matchIndex) => {
-          const matchDiv = document.createElement('div');
-          matchDiv.className = 'match';
-          const teamsContainer = document.createElement('div');
-          teamsContainer.className = 'teams';
-          let team1Status = "";
-          let team2Status = "";
-          if (match.winner) {
-            team1Status = (match.team1.name === match.winner.name) ? "winner" : "loser";
-            team2Status = (match.team2.name === match.winner.name) ? "winner" : "loser";
-            if (round.matches.length === 1) {
-              team1Status = (match.team1.name === match.winner.name) ? "final-winner" : team1Status;
-              team2Status = (match.team2.name === match.winner.name) ? "final-winner" : team2Status;
-            }
-          }
-          const team1Div = document.createElement('div');
-          team1Div.innerHTML = renderTeam(match.team1, team1Status);
-          team1Div.style.cursor = "pointer";
-          if (!match.winner)
-            team1Div.addEventListener('click', () => selectWinner(roundIndex, matchIndex, match.team1));
-          const team2Div = document.createElement('div');
-          team2Div.innerHTML = renderTeam(match.team2, team2Status);
-          team2Div.style.cursor = "pointer";
-          if (!match.winner)
-            team2Div.addEventListener('click', () => selectWinner(roundIndex, matchIndex, match.team2));
-          teamsContainer.appendChild(team1Div);
-          let vsText = document.createElement('div');
-          vsText.textContent = " vs ";
-          vsText.style.margin = "0 5px";
-          teamsContainer.appendChild(vsText);
-          teamsContainer.appendChild(team2Div);
-          matchDiv.appendChild(teamsContainer);
-          if (roundIndex < tournament.rounds.length - 1) {
-            const connectors = document.createElement('div');
-            connectors.className = 'connectors';
-            connectors.innerHTML = `<div class="connector top"></div><div class="connector bottom"></div>`;
-            matchDiv.appendChild(connectors);
-          }
-          roundDiv.appendChild(matchDiv);
-        });
-        bracketDiv.appendChild(roundDiv);
-      });
-      adjustPositions(bracketDiv);
-    }
+  const bracketDiv = document.getElementById('bracket');
+  bracketDiv.innerHTML = '';
+
+  tournament.rounds.forEach((round, roundIndex) => {
+    const roundDiv = document.createElement('div');
+    roundDiv.className = 'bracket-round';
+    roundDiv.innerHTML = `<h3>${getRoundName(round.matches.length * 2)}</h3>`;
+
+    round.matches.forEach((match, matchIndex) => {
+      const matchDiv = document.createElement('div');
+      matchDiv.className = 'match';
+      const teamsContainer = document.createElement('div');
+      teamsContainer.className = 'teams';
+
+      // Determine styling based on current selection
+      let team1Status = "";
+      let team2Status = "";
+      if (match.winner) {
+        team1Status = (match.team1.name === match.winner.name) ? "winner" : "loser";
+        team2Status = (match.team2.name === match.winner.name) ? "winner" : "loser";
+        if (round.matches.length === 1) {
+          team1Status = (match.team1.name === match.winner.name) ? "final-winner" : team1Status;
+          team2Status = (match.team2.name === match.winner.name) ? "final-winner" : team2Status;
+        }
+      }
+
+      // Always attach click listeners regardless of match state
+      const team1Div = document.createElement('div');
+      team1Div.innerHTML = renderTeam(match.team1, team1Status);
+      team1Div.style.cursor = "pointer";
+      team1Div.addEventListener('click', () => selectWinner(roundIndex, matchIndex, match.team1));
+
+      const team2Div = document.createElement('div');
+      team2Div.innerHTML = renderTeam(match.team2, team2Status);
+      team2Div.style.cursor = "pointer";
+      team2Div.addEventListener('click', () => selectWinner(roundIndex, matchIndex, match.team2));
+
+      teamsContainer.appendChild(team1Div);
+      let vsText = document.createElement('div');
+      vsText.textContent = " vs ";
+      vsText.style.margin = "0 5px";
+      teamsContainer.appendChild(vsText);
+      teamsContainer.appendChild(team2Div);
+      matchDiv.appendChild(teamsContainer);
+
+      // If not the final round, add connectors between rounds
+      if (roundIndex < tournament.rounds.length - 1) {
+        const connectors = document.createElement('div');
+        connectors.className = 'connectors';
+        connectors.innerHTML = `<div class="connector top"></div><div class="connector bottom"></div>`;
+        matchDiv.appendChild(connectors);
+      }
+
+      roundDiv.appendChild(matchDiv);
+    });
+
+    bracketDiv.appendChild(roundDiv);
+  });
+  adjustPositions(bracketDiv);
+}
+
     
-    function selectWinner(roundIndex, matchIndex, winner) {
-      const currentRound = tournament.rounds[tournament.currentRound];
-      if (currentRound.matches.length === 1) {
-        document.getElementById('finalSound').play().catch(err => console.error("Final sound error:", err));
-      } else {
-        document.getElementById('winnerSound').play().catch(err => console.error("Winner sound error:", err));
-      }
-      const match = tournament.rounds[roundIndex].matches[matchIndex];
-      match.winner = winner;
-      renderBracket();
-      if (tournament.rounds[tournament.currentRound].matches.every(m => m.winner)) {
-        createNextRound();
-      }
-    }
+   function selectWinner(roundIndex, matchIndex, winner) {
+  // If champion display is visible, hide it and show the tournament bracket again.
+  const championDisplay = document.getElementById('championDisplay');
+  const tournamentDiv = document.getElementById('tournament');
+  if (!championDisplay.classList.contains('hidden')) {
+    championDisplay.classList.add('hidden');
+    tournamentDiv.classList.remove('hidden');
+  }
+
+  const match = tournament.rounds[roundIndex].matches[matchIndex];
+
+  // If the match already had a different winner, roll back rounds beyond this match
+  if (match.winner && match.winner.name !== winner.name) {
+    tournament.rounds = tournament.rounds.slice(0, roundIndex + 1);
+    tournament.currentRound = roundIndex;
+  }
+
+  match.winner = winner;
+  renderBracket();
+
+  // If all matches in the current round now have winners, generate the next round
+  if (tournament.rounds[tournament.currentRound].matches.every(m => m.winner)) {
+    createNextRound();
+  }
+}
+
     
     function createNextRound() {
       const currentMatches = tournament.rounds[tournament.currentRound].matches;
@@ -1305,6 +1404,11 @@ function generateLeagueTeams() {
 }
     
    function startLeagueMode() {
+
+
+ // Add this line to capture the league format
+  tournament.leagueFormat = document.querySelector('input[name="leagueFormat"]:checked').value;
+  
   let container = document.getElementById('leagueTeamsContainer');
   let teamDivs = Array.from(container.getElementsByClassName('team-input'));
   let teams = [];
@@ -1345,37 +1449,56 @@ function generateLeagueTeams() {
     }
     
     function generateLeagueSchedule(teams) {
-      let n = teams.length;
-      let rounds = [];
-      let teamsList = teams.slice();
-      if (n % 2 !== 0) {
-        teamsList.push(null);
-        n++;
-      }
-      for (let round = 0; round < n - 1; round++) {
-        let matches = [];
-        for (let i = 0; i < n / 2; i++) {
-          let team1 = teamsList[i];
-          let team2 = teamsList[n - 1 - i];
-          if (team1 && team2) {
-            matches.push({ team1: team1, team2: team2, winner: null, result: null });
-          }
-        }
-        rounds.push({ matches: matches });
-        teamsList.splice(1, 0, teamsList.pop());
-      }
-      // If the user selected "Home and Away", duplicate the rounds with reversed fixtures.
-      if (tournament.leagueFormat === "homeAndAway") {
-        let reverseRounds = rounds.map(round => {
-          let reverseMatches = round.matches.map(match => {
-            return { team1: match.team2, team2: match.team1, winner: null, result: null };
-          });
-          return { matches: reverseMatches };
+  let n = teams.length;
+  let rounds = [];
+  let teamsList = teams.slice();
+  
+  if (n % 2 !== 0) {
+    teamsList.push(null);
+    n++;
+  }
+
+  // Generate home rounds
+  let homeRounds = [];
+  for (let round = 0; round < n - 1; round++) {
+    let matches = [];
+    for (let i = 0; i < n / 2; i++) {
+      let team1 = teamsList[i];
+      let team2 = teamsList[n - 1 - i];
+      if (team1 && team2) {
+        matches.push({ 
+          team1: team1, 
+          team2: team2,
+          winner: null,
+          result: null,
+          isHomeMatch: true
         });
-        rounds = rounds.concat(reverseRounds);
       }
-      return rounds;
     }
+    homeRounds.push({ matches: matches });
+    teamsList.splice(1, 0, teamsList.pop());
+  }
+
+  // For home/away, create reverse fixtures
+  if (tournament.leagueFormat === "homeAndAway") {
+    let awayRounds = homeRounds.map(round => {
+      return {
+        matches: round.matches.map(match => ({
+          team1: match.team2,
+          team2: match.team1,
+          winner: null,
+          result: null,
+          isHomeMatch: false
+        }))
+      };
+    });
+    rounds = [...homeRounds, ...awayRounds];
+  } else {
+    rounds = homeRounds;
+  }
+
+  return rounds;
+}
     
     function renderLeagueSchedule() {
   const scheduleDiv = document.getElementById('leagueSchedule');
@@ -1521,24 +1644,19 @@ function undoLeagueResult(roundIndex, matchIndex) {
 
     
     // Adjust league round widths so they scroll horizontally
-    function adjustLeagueRounds() {
-      const scheduleContainer = document.getElementById('leagueSchedule');
-      scheduleContainer.style.overflowX = 'auto';
-      scheduleContainer.style.whiteSpace = 'nowrap';
-      const rounds = scheduleContainer.getElementsByClassName('bracket-round');
-      const totalRounds = rounds.length;
-      if(totalRounds > 0) {
-        const containerWidth = scheduleContainer.clientWidth;
-        const newWidth = Math.floor(containerWidth / totalRounds) - 20;
-        for(let round of rounds) {
-          round.style.width = newWidth + 'px';
-          round.style.flex = '0 0 ' + newWidth + 'px';
-          round.style.boxSizing = 'border-box';
-          round.style.display = 'inline-block';
-          round.style.verticalAlign = 'top';
-        }
-      }
-    }
+   function adjustLeagueRounds() {
+  const scheduleContainer = document.getElementById('leagueSchedule');
+  const rounds = scheduleContainer.querySelectorAll('.bracket-round');
+  const containerWidth = scheduleContainer.clientWidth;
+  const minRoundWidth = 300;
+  
+  scheduleContainer.style.gap = `${Math.min(30, containerWidth * 0.03)}px`;
+  
+  rounds.forEach(round => {
+    round.style.flex = `0 0 ${minRoundWidth}px`;
+    round.style.minWidth = `${minRoundWidth}px`;
+  });
+}
     
    function selectLeagueResult(roundIndex, matchIndex, resultType, winningTeam) {
   const leagueFinal = document.getElementById('leagueFinal');
