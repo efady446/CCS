@@ -3,12 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <!-- Fixed viewport so that mobile devices render a desktop (PC-like) view -->
-  <meta name="viewport" content="width=1200">
+<meta name="viewport" content="width=device-width, initial-scale=1">
   <title> CCS </title>
   <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 
   <link rel="icon" type="image/png" href="assets/icons/favicon.png">
+
+
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#012169">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <style>
     /* ========================================================
@@ -103,6 +109,95 @@
       z-index: -5;
     }
     
+
+/* Minimum touch target size */
+button, .icon-option, .team-block {
+    min-width: 48px;
+    min-height: 48px;
+}
+
+/* Disable text selection */
+body {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Tap highlight color */
+* {
+    -webkit-tap-highlight-color: rgba(212, 175, 55, 0.3);
+}
+
+
+
+
+
+
+
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+    .container, #league {
+        width: 95% !important;
+        margin: 20px auto !important;
+        padding: 15px !important;
+    }
+
+    h1 {
+        font-size: 2em !important;
+    }
+
+    .team-input input[type="text"] {
+        width: 80% !important;
+    }
+
+    #muteBtn, #themeToggle {
+        font-size: 1.2em !important;
+        padding: 8px !important;
+        top: 10px !important;
+    }
+
+    #muteBtn { right: 80px !important; }
+
+    .icon-bar {
+        padding: 5px !important;
+        gap: 5px !important;
+    }
+
+    .icon-option {
+        width: 28px !important;
+        height: 28px !important;
+    }
+
+    .match {
+        margin: 10px 0 !important;
+        padding: 10px !important;
+    }
+
+    button {
+        padding: 10px 15px !important;
+        font-size: 1em !important;
+    }
+}
+
+/* Prevent horizontal scroll on mobile */
+html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -718,10 +813,24 @@
 
 
 
-
-
-
-
+#savedTournamentsSection {
+  border: 2px dashed var(--gold);
+  padding: 10px 20px;
+  margin-top: 20px;
+  border-radius: 8px;
+}
+#savedTournamentsList ul {
+  list-style: none;
+  padding-left: 0;
+}
+#savedTournamentsList li {
+  margin: 10px 0;
+}
+#savedTournamentsList button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  font-size: 0.9em;
+}
 
 
 
@@ -774,6 +883,11 @@
       <button id="clearGlobalBtn" onclick="clearLeaderboard()">Clear Global Leaderboard</button>
     </div>
     
+<div id="savedTournamentsSection">
+    <h2>Saved Tournaments</h2>
+    <div id="savedTournamentsList"></div>
+  </div>
+
     <!-- Mode Selection -->
     <div class="mode-controls">
       <label>
@@ -848,25 +962,26 @@
   </div>
   
   <!-- TOURNAMENT BRACKET (for Knockout mode) -->
-  <div class="container hidden" id="tournament">
-    <h2 id="roundTitle">🏆 Tournament Bracket 🏆</h2>
-    <div id="bracket"></div>
-  </div>
-  
+<div class="container hidden" id="tournament">
+  <h2 id="roundTitle">🏆 Tournament Bracket 🏆</h2>
+  <button onclick="undoKnockout()">Undo</button>
+  <button onclick="returnHome()">Return Home</button>
+  <button onclick="saveCurrentState()">Save Progress</button>
+  <div id="bracket"></div>
+</div>
   <!-- LEAGUE MODE CONTAINER -->
-  <div class="container hidden" id="league">
-    <h2 id="leagueTitle">League Schedule</h2>
-    <div id="leagueSchedule"></div>
-    <h2>League Table</h2>
-    <div id="leagueTable"></div>
-    <button id="finishLeagueBtn" class="hidden" onclick="finishLeague()">Save League</button>
-    <div id="leagueFinal" class="hidden"></div>
-    <!-- League Tournament Leaderboard (Top 3 Teams) -->
-    <div id="leagueLeaderboard"></div>
-    <!-- Return Home Button for League Mode -->
-    <button id="leagueReturnBtn" onclick="goToGlobalLeaderboard()">Return Home</button>
-  </div>
-  
+<div class="container hidden" id="league">
+  <h2 id="leagueTitle">League Schedule</h2>
+  <button onclick="undoLeague()">Undo</button>
+  <button onclick="saveCurrentState()">Save Progress</button>
+  <div id="leagueSchedule"></div>
+  <h2>League Table</h2>
+  <div id="leagueTable"></div>
+  <button id="finishLeagueBtn" class="hidden" onclick="finishLeague()">Save League</button>
+  <div id="leagueFinal" class="hidden"></div>
+  <div id="leagueLeaderboard"></div>
+  <button id="leagueReturnBtn" onclick="goToGlobalLeaderboard()">Return Home</button>
+</div>  
   <!-- CHAMPION DISPLAY (for Knockout mode) -->
   <div class="container hidden" id="championDisplay">
     <h2>CHAMPION OF EUROPE</h2>
@@ -900,10 +1015,37 @@
     </div>
   </div>
   
+
+
+
+
+
+
+
+
+
+
+
   <script>
     /********************
      * Global Variables *
      ********************/
+
+const iconOptions = [
+  "assets/icons/icon1.png",
+  "assets/icons/icon2.png",
+  "assets/icons/icon3.png",
+  "assets/icons/icon4.png",
+  "assets/icons/icon5.png",
+  "assets/icons/icon6.png"
+];
+
+
+
+
+
+let knockoutHistory = [];
+let leagueHistory = [];
     let tournament = { rounds: [], currentRound: 0, pairing: 'random', mode: 'knockout', totalTeams: 0 };
     let manualPairing = { availableTeams: [], matches: [], dropSlots: { 1: null, 2: null } };
     let leagueStandings = {}; // For league mode standings
@@ -1109,36 +1251,44 @@ function generateKnockdownTeams() {
   }
   document.getElementById('startBtn').classList.remove('hidden');
 }
- 
-    function startTournament() {
-  if (tournament.mode !== "knockout") return;
-  let teamDivs = Array.from(document.querySelectorAll('#teamInputs .team-input'));
+ function startTournament() {
+  let teamDivs = Array.from(document.getElementById('teamInputs').children);
   let teams = teamDivs.map(div => {
     let name = div.querySelector('input[type="text"]').value.trim();
-    // Get the photo or icon from the file input dataset
     let photoInput = div.querySelector('input[type="file"]');
     let icon = photoInput.dataset.icon || "";
     let photo = photoInput.dataset.photo || "";
     if (!name) throw new Error("Please fill in all team names.");
     return { name, photo, icon };
- 
-      });
-      if(new Set(teams.map(t => t.name)).size !== teams.length)
-        throw new Error("Team names must be unique.");
-      if(teams.length !== parseInt(document.getElementById('teamCount').value))
-        throw new Error("Incorrect number of teams entered.");
-      tournament.pairing = document.querySelector('input[name="pairing"]:checked').value;
-      if(tournament.pairing === "random"){
-        tournament.rounds = [{ matches: createRandomPairs(teams) }];
-        document.getElementById('setup').classList.add('hidden');
-        document.getElementById('tournament').classList.remove('hidden');
-        renderBracket();
-      } else {
-        document.getElementById('teamInputs').classList.add('hidden');
-        startManualPairing(teams);
-      }
-    }
-    
+  });
+  knockoutHistory = [{ type: 'setup', teams: teams.map(team => ({ name: team.name, icon: team.icon, photo: team.photo })) }]; // Include icon and photo
+
+  if (new Set(teams.map(t => t.name)).size !== teams.length)
+    throw new Error("Team names must be unique.");
+  if (teams.length !== parseInt(document.getElementById('teamCount').value))
+    throw new Error("Incorrect number of teams entered.");
+  tournament.pairing = document.querySelector('input[name="pairing"]:checked').value;
+  tournament.initialTeams = teams; // Store initial teams
+  if (tournament.pairing === "random") {
+    tournament.rounds = [{ matches: createRandomPairs(teams) }];
+    knockoutHistory = [{ type: 'setup', teams: teams }]; // Initialize history with setup state
+    document.getElementById('setup').classList.add('hidden');
+    document.getElementById('tournament').classList.remove('hidden');
+    renderBracket();
+  } else {
+    document.getElementById('teamInputs').classList.add('hidden');
+    startManualPairing(teams);
+  }
+}
+
+function finishManualPairing() {
+  tournament.rounds = [{ matches: manualPairing.matches.slice() }];
+  knockoutHistory = [{ type: 'setup', teams: tournament.initialTeams }]; // Initialize history with setup state
+  document.getElementById('manualPairingContainer').classList.add('hidden');
+  document.getElementById('setup').classList.add('hidden');
+  document.getElementById('tournament').classList.remove('hidden');
+  renderBracket();
+}
     function createRandomPairs(teams) {
       const shuffled = teams.slice().sort(() => Math.random() - 0.5);
       const matches = [];
@@ -1210,8 +1360,7 @@ function generateKnockdownTeams() {
 }
 
     
-   function selectWinner(roundIndex, matchIndex, winner) {
-  // If champion display is visible, hide it and show the tournament bracket again.
+  function selectWinner(roundIndex, matchIndex, winner) {
   const championDisplay = document.getElementById('championDisplay');
   const tournamentDiv = document.getElementById('tournament');
   if (!championDisplay.classList.contains('hidden')) {
@@ -1220,22 +1369,17 @@ function generateKnockdownTeams() {
   }
 
   const match = tournament.rounds[roundIndex].matches[matchIndex];
-
-  // If the match already had a different winner, roll back rounds beyond this match
+  knockoutHistory.push({ type: 'rounds', rounds: JSON.parse(JSON.stringify(tournament.rounds)) }); // Save state
   if (match.winner && match.winner.name !== winner.name) {
     tournament.rounds = tournament.rounds.slice(0, roundIndex + 1);
     tournament.currentRound = roundIndex;
   }
-
   match.winner = winner;
   renderBracket();
-
-  // If all matches in the current round now have winners, generate the next round
   if (tournament.rounds[tournament.currentRound].matches.every(m => m.winner)) {
     createNextRound();
   }
 }
-
     
     function createNextRound() {
       const currentMatches = tournament.rounds[tournament.currentRound].matches;
@@ -1284,21 +1428,22 @@ function generateKnockdownTeams() {
       event.dataTransfer.setData("text/plain", event.currentTarget.getAttribute("data-index"));
     }
     function allowDrop(event) { event.preventDefault(); }
-    function dropTeam(event, zoneNumber) {
-      event.preventDefault();
-      const index = event.dataTransfer.getData("text/plain");
-      if (manualPairing.dropSlots[zoneNumber] !== null) return;
-      const team = manualPairing.availableTeams[index];
-      manualPairing.dropSlots[zoneNumber] = team;
-      const dropZone = document.getElementById("dropZone" + zoneNumber);
-      dropZone.innerHTML = renderTeam(team);
-      dropZone.classList.add('filled');
-      manualPairing.availableTeams.splice(index, 1);
-      updateAvailableTeamsUI();
-      if (manualPairing.dropSlots[1] && manualPairing.dropSlots[2]) {
-        formMatchFromDropZones();
-      }
-    }
+   function dropTeam(event, zoneNumber) {
+  event.preventDefault();
+  const index = event.dataTransfer.getData("text/plain");
+  if (manualPairing.dropSlots[zoneNumber] !== null) return;
+  knockoutHistory.push({ type: 'manualPairing', manualPairing: JSON.parse(JSON.stringify(manualPairing)) }); // Save state before drop
+  const team = manualPairing.availableTeams[index];
+  manualPairing.dropSlots[zoneNumber] = team;
+  const dropZone = document.getElementById("dropZone" + zoneNumber);
+  dropZone.innerHTML = renderTeam(team);
+  dropZone.classList.add('filled');
+  manualPairing.availableTeams.splice(index, 1);
+  updateAvailableTeamsUI();
+  if (manualPairing.dropSlots[1] && manualPairing.dropSlots[2]) {
+    formMatchFromDropZones();
+  }
+}
     function formMatchFromDropZones() {
       const teamA = manualPairing.dropSlots[1];
       const teamB = manualPairing.dropSlots[2];
@@ -1323,12 +1468,13 @@ function generateKnockdownTeams() {
       });
     }
     function finishManualPairing() {
-      tournament.rounds = [{ matches: manualPairing.matches.slice() }];
-      document.getElementById('manualPairingContainer').classList.add('hidden');
-      document.getElementById('setup').classList.add('hidden');
-      document.getElementById('tournament').classList.remove('hidden');
-      renderBracket();
-    }
+  tournament.rounds = [{ matches: manualPairing.matches.slice() }];
+  knockoutHistory = []; // Reset history
+  document.getElementById('manualPairingContainer').classList.add('hidden');
+  document.getElementById('setup').classList.add('hidden');
+  document.getElementById('tournament').classList.remove('hidden');
+  renderBracket();
+}
     
     /********************
      * League Mode Functions *
@@ -1382,7 +1528,7 @@ function generateLeagueTeams() {
     // Create a horizontal, animated icon bar
     let iconBar = document.createElement('div');
     iconBar.className = 'icon-bar';
-    iconOptions.forEach(iconPath => {
+ iconOptions.forEach(iconPath => { // Use global iconOptions
       let iconImg = document.createElement('img');
       iconImg.src = iconPath;
       iconImg.className = 'icon-option';
@@ -1391,55 +1537,43 @@ function generateLeagueTeams() {
         Array.from(iconBar.children).forEach(child => child.classList.remove('selected'));
         iconImg.classList.add('selected');
         photoInput.dataset.icon = iconPath;
-        // (Optional) If you want to clear any file upload when an icon is chosen:
-        // photoInput.value = "";
-        // delete photoInput.dataset.photo;
       });
       iconBar.appendChild(iconImg);
     });
     div.appendChild(iconBar);
-
     container.appendChild(div);
   }
 }
     
-   function startLeagueMode() {
-
-
- // Add this line to capture the league format
+function startLeagueMode() {
   tournament.leagueFormat = document.querySelector('input[name="leagueFormat"]:checked').value;
-  
   let container = document.getElementById('leagueTeamsContainer');
   let teamDivs = Array.from(container.getElementsByClassName('team-input'));
   let teams = [];
   teamDivs.forEach(div => {
     let name = div.querySelector('input[type="text"]').value.trim();
     let photoInput = div.querySelector('input[type="file"]');
-    // Get the selected icon (if any) or the uploaded photo
     let icon = photoInput.dataset.icon || "";
     let photo = photoInput.dataset.photo || "";
-    if (!name) { 
-      showToast("Please fill in all team names."); 
-      return; 
+    if (!name) {
+      showToast("Please fill in all team names.");
+      return;
     }
     teams.push({ name, photo, icon });
   });
-  if (teams.length < 2) { 
-    showToast("At least 2 teams are required for league mode."); 
-    return; 
+  if (teams.length < 2) {
+    showToast("At least 2 teams are required for league mode.");
+    return;
   }
   tournament.totalTeams = teams.length;
-  
-  // (Additional logic to initialize and start league mode remains unchanged)
+  tournament.initialTeams = teams; // Store initial teams
   initializeLeague(teams);
-  document.getElementById('setup').classList.add('hidden');
+leagueHistory = [{ type: 'setup', teams: teams.map(team => ({ name: team.name, icon: team.icon, photo: team.photo })) }];  document.getElementById('setup').classList.add('hidden');
   document.getElementById('league').classList.remove('hidden');
   renderLeagueSchedule();
   updateLeagueTable();
   adjustLeagueRounds();
-}
-
-    
+}    
     function initializeLeague(teams) {
       tournament.rounds = generateLeagueSchedule(teams);
       leagueStandings = {};
@@ -1658,15 +1792,18 @@ function undoLeagueResult(roundIndex, matchIndex) {
   });
 }
     
-   function selectLeagueResult(roundIndex, matchIndex, resultType, winningTeam) {
+function selectLeagueResult(roundIndex, matchIndex, resultType, winningTeam) {
   const leagueFinal = document.getElementById('leagueFinal');
   if (leagueFinal && !leagueFinal.classList.contains('hidden')) {
     leagueFinal.classList.add('hidden');
   }
-  
   let match = tournament.rounds[roundIndex].matches[matchIndex];
+  leagueHistory.push({
+    type: 'league',
+    rounds: JSON.parse(JSON.stringify(tournament.rounds)),
+    standings: JSON.parse(JSON.stringify(leagueStandings))
+  });
 
-  // If a previous result exists, undo its impact.
   if (match.result) {
     if (match.result === "win") {
       let prevWinner = match.winner;
@@ -1686,7 +1823,6 @@ function undoLeagueResult(roundIndex, matchIndex) {
     }
   }
 
-  // Apply the new result.
   if (resultType === "win") {
     match.result = "win";
     match.winner = winningTeam;
@@ -1706,16 +1842,14 @@ function undoLeagueResult(roundIndex, matchIndex) {
     leagueStandings[match.team2.name].draws++;
     leagueStandings[match.team2.name].points += 1;
   }
-  
+
   renderLeagueSchedule();
   updateLeagueTable();
 
   if (isLeagueComplete()) {
     document.getElementById('finishLeagueBtn').classList.remove('hidden');
   }
-}
-
-    function updateLeagueTable() {
+}    function updateLeagueTable() {
       const tableDiv = document.getElementById('leagueTable');
       let teams = [];
       for (let team in leagueStandings) {
@@ -2011,50 +2145,54 @@ function undoLeagueResult(roundIndex, matchIndex) {
     }
     
     function updatePersistentLeaderboard() {
-      let champions = JSON.parse(localStorage.getItem('champions')) || [];
-      let groups = {};
-      champions.forEach(rec => {
-        if (!groups[rec.name]) groups[rec.name] = [];
-        groups[rec.name].push(rec);
-      });
-      let groupedRecords = [];
-      for (let name in groups) {
-        groups[name].sort((a, b) => b.timestamp - a.timestamp);
-        groupedRecords.push({ name: name, count: groups[name].length, records: groups[name] });
-      }
-      groupedRecords.sort((a, b) => b.count - a.count);
-      let currentRank = 0;
-      let lastCount = null;
-      let medalMap = {};
-      groupedRecords.forEach((group, index) => {
-        if (lastCount === null || group.count < lastCount) {
-          currentRank = index + 1;
-          lastCount = group.count;
-        }
-        if (currentRank === 1) medalMap[group.name] = "🥇";
-        else if (currentRank === 2) medalMap[group.name] = "🥈";
-        else if (currentRank === 3) medalMap[group.name] = "🥉";
-        else medalMap[group.name] = "";
-      });
-      groupedChampionRecords = groupedRecords;
-      let containerLB = document.getElementById('persistentLeaderboardContent');
-      if (groupedRecords.length === 0) {
-        containerLB.innerHTML = "No champions recorded yet.";
-      } else {
-        let list = '<ol style="list-style: decimal; padding-left: 20px;">';
-        groupedRecords.forEach(group => {
-          let medal = medalMap[group.name] ? medalMap[group.name] + " " : "";
-          let dates = group.records.map(rec => {
-            let dateStr = new Date(rec.timestamp).toLocaleDateString();
-            return `<a href="#" onclick="showChampionRecordByName('${group.name}', ${rec.timestamp}); return false;">${dateStr} (${rec.mode})</a>`;
-          }).join(", ");
-          list += `<li>${medal}${group.name} (Wins: ${group.count}) - ${dates}</li>`;
-        });
-        list += '</ol>';
-        containerLB.innerHTML = list;
-      }
+  let champions = JSON.parse(localStorage.getItem('champions')) || [];
+  let groups = {};
+  champions.forEach(rec => {
+    if (!groups[rec.name]) groups[rec.name] = [];
+    groups[rec.name].push(rec);
+  });
+  let groupedRecords = [];
+  for (let name in groups) {
+    groups[name].sort((a, b) => b.timestamp - a.timestamp);
+    groupedRecords.push({ name: name, count: groups[name].length, records: groups[name] });
+  }
+  groupedRecords.sort((a, b) => b.count - a.count);
+  let currentRank = 0;
+  let lastCount = null;
+  let medalMap = {};
+  groupedRecords.forEach((group, index) => {
+    if (lastCount === null || group.count < lastCount) {
+      currentRank = index + 1;
+      lastCount = group.count;
     }
-    
+    if (currentRank === 1) medalMap[group.name] = "🥇";
+    else if (currentRank === 2) medalMap[group.name] = "🥈";
+    else if (currentRank === 3) medalMap[group.name] = "🥉";
+    else medalMap[group.name] = "";
+  });
+  groupedChampionRecords = groupedRecords;
+  let containerLB = document.getElementById('persistentLeaderboardContent');
+  if (groupedRecords.length === 0) {
+    containerLB.innerHTML = "No champions recorded yet.";
+  } else {
+    let list = '<ol style="list-style: decimal; padding-left: 20px;">';
+    groupedRecords.forEach(group => {
+      let medal = medalMap[group.name] ? medalMap[group.name] + " " : "";
+      let dates = group.records.map(rec => {
+        let dateStr = new Date(rec.timestamp).toLocaleDateString();
+        return `<a href="#" onclick="showChampionRecordByName('${group.name}', ${rec.timestamp}); return false;">${dateStr} (${rec.mode})</a> <button onclick="deleteChampionRecord('${group.name}', ${rec.timestamp})">Delete</button>`;
+      }).join(", ");
+      list += `<li>${medal}${group.name} (Wins: ${group.count}) - ${dates}</li>`;
+    });
+    list += '</ol>';
+    containerLB.innerHTML = list;
+  }
+
+
+
+
+
+}
     function clearLeaderboard() {
       localStorage.removeItem('champions');
       updatePersistentLeaderboard();
@@ -2226,15 +2364,206 @@ function renderChampionBracketFromRecord(record) {
 // On page load, update the persistent leaderboard from localStorage
 window.addEventListener('load', updatePersistentLeaderboard);
 
-  </script>
-</body>
-</html>
+
+function undoKnockout() {
+  if (knockoutHistory.length > 0) {
+    let lastState = knockoutHistory.pop();
+    if (lastState.type === 'rounds') {
+      tournament.rounds = lastState.rounds;
+      document.getElementById('tournament').classList.remove('hidden');
+      document.getElementById('manualPairingContainer').classList.add('hidden');
+      document.getElementById('setup').classList.add('hidden');
+      renderBracket();
+    } else if (lastState.type === 'manualPairing') {
+      manualPairing = lastState.manualPairing;
+      document.getElementById('manualPairingContainer').classList.remove('hidden');
+      document.getElementById('tournament').classList.add('hidden');
+      document.getElementById('setup').classList.add('hidden');
+      renderManualPairing();
+    } else if (lastState.type === 'setup') {
+      restoreTeamInputs(lastState.teams, 'knockout');
+      document.getElementById('setup').classList.remove('hidden');
+      document.getElementById('tournament').classList.add('hidden');
+      document.getElementById('manualPairingContainer').classList.add('hidden');
+    }
+  } else {
+    showToast("No more actions to undo.");
+  }
+}
+function undoLeague() {
+  if (leagueHistory.length > 0) {
+    let lastState = leagueHistory.pop();
+    if (lastState.type === 'league') {
+      tournament.rounds = lastState.rounds;
+      leagueStandings = lastState.standings;
+      renderLeagueSchedule();
+      updateLeagueTable();
+    } else if (lastState.type === 'setup') {
+      restoreTeamInputs(lastState.teams, 'league');
+      document.getElementById('league').classList.add('hidden');
+      document.getElementById('setup').classList.remove('hidden');
+    }
+  } else {
+    showToast("No more actions to undo.");
+  }
+}
+
+function saveCurrentState() {
+  let state = {
+    mode: tournament.mode,
+    rounds: JSON.parse(JSON.stringify(tournament.rounds)),
+    currentRound: tournament.currentRound,
+    totalTeams: tournament.totalTeams,
+    leagueStandings: tournament.mode === 'league' ? JSON.parse(JSON.stringify(leagueStandings)) : null
+  };
+  let savedTournaments = JSON.parse(localStorage.getItem('savedTournaments')) || [];
+  let id = Date.now();
+  let name = `Tournament - ${tournament.mode} - ${new Date().toLocaleString()}`;
+  savedTournaments.push({ id, name, state });
+  localStorage.setItem('savedTournaments', JSON.stringify(savedTournaments));
+  showToast("Tournament saved.");
+}
+
+
+function updateSavedTournamentsList() {
+  let savedTournaments = JSON.parse(localStorage.getItem('savedTournaments')) || [];
+  let container = document.getElementById('savedTournamentsList');
+  container.innerHTML = '';
+  if (savedTournaments.length === 0) {
+    container.innerHTML = "No saved tournaments.";
+  } else {
+    let list = '<ul>';
+    savedTournaments.forEach(tournament => {
+      list += `<li>${tournament.name} <button onclick="loadSavedTournament(${tournament.id})">Load</button> <button onclick="deleteSavedTournament(${tournament.id})">Delete</button></li>`;
+    });
+    list += '</ul>';
+    container.innerHTML = list;
+  }
+}
+
+function loadSavedTournament(id) {
+  let savedTournaments = JSON.parse(localStorage.getItem('savedTournaments')) || [];
+  let tournamentToLoad = savedTournaments.find(t => t.id === id);
+  if (!tournamentToLoad) {
+    showToast("Tournament not found.");
+    return;
+  }
+  let state = tournamentToLoad.state;
+  tournament.mode = state.mode;
+  tournament.rounds = state.rounds;
+  tournament.currentRound = state.currentRound;
+  tournament.totalTeams = state.totalTeams;
+  if (state.mode === 'league') {
+    leagueStandings = state.leagueStandings;
+  }
+  knockoutHistory = [];
+  leagueHistory = [];
+  document.getElementById('setup').classList.add('hidden');
+  if (state.mode === 'knockout') {
+    document.getElementById('tournament').classList.remove('hidden');
+    renderBracket();
+  } else if (state.mode === 'league') {
+    document.getElementById('league').classList.remove('hidden');
+    renderLeagueSchedule();
+    updateLeagueTable();
+  }
+}
+
+function deleteSavedTournament(id) {
+  if (confirm("Are you sure you want to delete this saved tournament?")) {
+    let savedTournaments = JSON.parse(localStorage.getItem('savedTournaments')) || [];
+    savedTournaments = savedTournaments.filter(t => t.id !== id);
+    localStorage.setItem('savedTournaments', JSON.stringify(savedTournaments));
+    updateSavedTournamentsList();
+    showToast("Tournament deleted.");
+  }
+}
 
 
 
+function restoreTeamInputs(teams, mode) {
+  let container = mode === 'knockout' ? document.getElementById('teamInputs') : document.getElementById('leagueTeamsContainer');
+  container.innerHTML = '';
+  teams.forEach((team, index) => {
+    let div = document.createElement('div');
+    div.className = 'team-input';
+    let nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.value = team.name;
+    div.appendChild(nameInput);
+    let photoInput = document.createElement('input');
+    photoInput.type = 'file';
+    photoInput.accept = 'image/*';
+    photoInput.style.cursor = 'pointer';
+    if (team.photo) {
+      photoInput.dataset.photo = team.photo; // Restore photo data URL
+    }
+    if (team.icon) {
+      photoInput.dataset.icon = team.icon; // Restore icon path
+    }
+    div.appendChild(photoInput);
+    let iconBar = document.createElement('div');
+    iconBar.className = 'icon-bar';
+    iconOptions.forEach(iconPath => {
+      let iconImg = document.createElement('img');
+      iconImg.src = iconPath;
+      iconImg.className = 'icon-option';
+      if (team.icon === iconPath) {
+        iconImg.classList.add('selected'); // Highlight previously selected icon
+      }
+      iconImg.title = 'Select this icon';
+      iconImg.addEventListener('click', function() {
+        Array.from(iconBar.children).forEach(child => child.classList.remove('selected'));
+        iconImg.classList.add('selected');
+        photoInput.dataset.icon = iconPath;
+      });
+      iconBar.appendChild(iconImg);
+    });
+    div.appendChild(iconBar);
+    container.appendChild(div);
+  });
+  if (mode === 'knockout') {
+    document.getElementById('teamCount').value = teams.length;
+  } else {
+    document.getElementById('leagueTeamCount').value = teams.length;
+  }
+}function deleteChampionRecord(name, timestamp) {
+  if (confirm("Are you sure you want to delete this record?")) {
+    let champions = JSON.parse(localStorage.getItem('champions')) || [];
+    champions = champions.filter(rec => !(rec.name === name && rec.timestamp === timestamp));
+    localStorage.setItem('champions', JSON.stringify(champions));
+    updatePersistentLeaderboard();
+    showToast("Record deleted.");
+  }
+}
+
+window.addEventListener('load', () => {
+  updatePersistentLeaderboard();
+  updateSavedTournamentsList();
+});
 
 
 
+function renderManualPairing() {
+  updateAvailableTeamsUI();
+  updateFormedMatchesUI();
+  const dropZone1 = document.getElementById('dropZone1');
+  const dropZone2 = document.getElementById('dropZone2');
+  if (manualPairing.dropSlots[1]) {
+    dropZone1.innerHTML = renderTeam(manualPairing.dropSlots[1]);
+    dropZone1.classList.add('filled');
+  } else {
+    dropZone1.innerHTML = "Team Slot 1";
+    dropZone1.classList.remove('filled');
+  }
+  if (manualPairing.dropSlots[2]) {
+    dropZone2.innerHTML = renderTeam(manualPairing.dropSlots[2]);
+    dropZone2.classList.add('filled');
+  } else {
+    dropZone2.innerHTML = "Team Slot 2";
+    dropZone2.classList.remove('filled');
+  }
+}
 
 
   </script>
