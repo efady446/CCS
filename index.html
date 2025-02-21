@@ -130,10 +130,6 @@ body {
 
 
 
-
-
-
-
 /* Mobile Responsive Adjustments */
 @media (max-width: 768px) {
     .container, #league {
@@ -158,15 +154,20 @@ body {
 
     #muteBtn { right: 80px !important; }
 
-    .icon-bar {
-        padding: 5px !important;
-        gap: 5px !important;
-    }
+.icon-bar {
+  display: flex;
+  flex-wrap: wrap; /* Icons wrap to new rows on narrow screens */
+  justify-content: center; /* Center icons in each row */
+  gap: 10px; /* Space between icons */
+  padding: 10px; /* Padding around the bar */
+  /* Removed overflow-x: auto since wrapping handles overflow */
+}
 
-    .icon-option {
-        width: 28px !important;
-        height: 28px !important;
-    }
+.icon-option {
+  width: 44px; /* Minimum touch target size */
+  height: 44px;
+  /* Retain other styles like background, cursor, etc. */
+}
 
     .match {
         margin: 10px 0 !important;
@@ -185,15 +186,160 @@ html, body {
     max-width: 100%;
 }
 
+/* Adjustments for screens up to 768px (tablets and smaller) */
+@media (max-width: 768px) {
+    /* Stack bracket rounds vertically for knockout mode */
+    #bracket, #championBracket {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .bracket-round {
+        width: 100%;
+        max-width: 300px;
+        min-width: 0; /* Override fixed min-width for mobile */
+    }
+    .connectors {
+        display: none; /* Hide connectors as they don’t align in vertical layout */
+    }
+
+    /* Stack manual pairing bucket vertically */
+    #pairingBucket {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .dropZone {
+        width: 100%;
+        max-width: 300px;
+        height: 100px;
+    }
+
+    /* Optimize league schedule rounds */
+    #leagueSchedule .bracket-round {
+        min-width: 200px; /* Reduce width for smaller screens */
+        flex: 0 0 200px;
+    }
+
+    /* Enhance button sizes for touch */
+    button {
+        padding: 12px 18px !important;
+        font-size: 1.1em !important;
+    }
+
+    /* Adjust team blocks for better spacing */
+    .team-block {
+        padding: 8px;
+    }
+}
+
+/* Adjustments for very small screens (e.g., phones below 480px) */
+@media (max-width: 480px) {
+    /* Stack mute and theme toggle buttons vertically */
+    #muteBtn {
+        right: 20px !important;
+        top: 60px !important;
+    }
+    #themeToggle {
+        right: 20px !important;
+        top: 10px !important;
+    }
+
+    /* Further reduce sizes for readability */
+    h1 {
+        font-size: 1.8em !important;
+    }
+    .team-input input[type="text"] {
+        width: 70% !important;
+    }
+    .icon-option {
+        width: 24px !important;
+        height: 24px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #bracket, #championBracket {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .bracket-round {
+        width: 100%;
+        max-width: 300px;
+        min-width: 0;
+    }
+    .connectors {
+        display: none;
+    }
+    #pairingBucket {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .dropZone {
+        width: 100%;
+        max-width: 300px;
+        height: 100px;
+    }
+    #leagueSchedule .bracket-round {
+        min-width: 200px;
+        flex: 0 0 200px;
+    }
+    button {
+        padding: 12px 18px !important;
+        font-size: 1.1em !important;
+    }
+    .team-block {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    #muteBtn {
+        right: 20px !important;
+        top: 60px !important;
+    }
+    #themeToggle {
+        right: 20px !important;
+        top: 10px !important;
+    }
+    h1 {
+        font-size: 1.8em !important;
+    }
+    .team-input input[type="text"] {
+        width: 70% !important;
+    }
+    .icon-option {
+        width: 24px !important;
+        height: 24px !important;
+    }
+}
+
+.league-result-btn.small {
+    font-size: 0.8em;
+    padding: 4px 6px;
+}
 
 
 
+@media (max-width: 768px) {
+  .team-input {
+    flex-direction: column; /* Stack name input, file input, and icon bar vertically */
+    align-items: center; /* Center elements */
+  }
+  .icon-bar {
+    justify-content: center; /* Ensure wrapped icons are centered */
+  }
+}
 
-
-
-
-
-
+@media (max-width: 768px) {
+  .team-input {
+    flex-direction: column; /* Stack name input, file input, and icon bar vertically */
+    align-items: center; /* Center elements */
+  }
+  .icon-bar {
+    justify-content: center; /* Ensure wrapped icons are centered */
+  }
+}
 
 
 
@@ -2241,9 +2387,10 @@ function selectLeagueResult(roundIndex, matchIndex, resultType, winningTeam) {
      * Adjust Positions *
      **************************/
     function adjustPositions(container) {
-      if(container.id === "leagueSchedule") return;
-      const rounds = container.getElementsByClassName('bracket-round');
-      if (rounds.length < 2) return;
+    if (container.id === "leagueSchedule") return; // Skip for league schedule
+    if (window.innerWidth <= 768) return; // Skip on mobile
+    const rounds = container.getElementsByClassName('bracket-round');
+    if (rounds.length < 2) return;
       for (let r = 1; r < rounds.length; r++) {
         const prevRound = rounds[r - 1];
         const currRound = rounds[r];
@@ -2566,6 +2713,19 @@ function renderManualPairing() {
 }
 
 
+
+
+
+
+
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
