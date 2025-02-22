@@ -1319,7 +1319,7 @@ function generateKnockdownTeams() {
   container.innerHTML = '';
   document.getElementById('manualPairingContainer').classList.add('hidden');
 
-  // Extend this array with as many icon image paths as you want
+  // Define your icon options globally (if not already defined)
   const iconOptions = [
     "assets/icons/icon1.png",
     "assets/icons/icon2.png",
@@ -1348,43 +1348,19 @@ function generateKnockdownTeams() {
     photoInput.style.cursor = 'pointer';
     photoInput.addEventListener('change', function(event) {
       const file = event.target.files[0];
-      if(file){
+      if (file) {
         const reader = new FileReader();
-        reader.onload = function(e){ 
+        reader.onload = function(e) { 
           // Store the uploaded image data
           photoInput.dataset.photo = e.target.result;
-          // (Optional) You can decide whether to clear the icon selection:
-          // In this example, we leave the icon selection intact so the icon stays visible.
-          // If you want to override the icon when a file is uploaded, you can uncomment:
-          // delete photoInput.dataset.icon;
         }
         reader.readAsDataURL(file);
       }
     });
     div.appendChild(photoInput);
 
-    // Create a horizontal, animated icon bar
-    let iconBar = document.createElement('div');
-    iconBar.className = 'icon-bar';
-    iconOptions.forEach(iconPath => {
-      let iconImg = document.createElement('img');
-      iconImg.src = iconPath;
-      iconImg.className = 'icon-option';
-      iconImg.title = 'Select this icon';
-      iconImg.addEventListener('click', function() {
-        // Remove "selected" styling from all icons in this bar
-        Array.from(iconBar.children).forEach(child => child.classList.remove('selected'));
-        // Add the "selected" class to the clicked icon
-        iconImg.classList.add('selected');
-        // Save the chosen icon in the file input's dataset
-        photoInput.dataset.icon = iconPath;
-        // (Optional) If you want to clear any uploaded file when an icon is selected, uncomment:
-        // photoInput.value = "";
-        // delete photoInput.dataset.photo;
-      });
-      iconBar.appendChild(iconImg);
-    });
-    div.appendChild(iconBar);
+    // Append the smooth icon bar using our new function
+    div.appendChild(createIconBar(photoInput));
 
     container.appendChild(div);
   }
@@ -1623,7 +1599,7 @@ function generateLeagueTeams() {
   let container = document.getElementById('leagueTeamsContainer');
   container.innerHTML = '';
 
-  // Extend this array with as many icons as you want
+  // Define your icon options (if not defined globally)
   const iconOptions = [
     "assets/icons/icon1.png",
     "assets/icons/icon2.png",
@@ -1656,30 +1632,15 @@ function generateLeagueTeams() {
         const reader = new FileReader();
         reader.onload = function(e) {
           photoInput.dataset.photo = e.target.result;
-          // (Optional) Do not clear the icon selection so it remains visible:
-          // delete photoInput.dataset.icon;
         }
         reader.readAsDataURL(file);
       }
     });
     div.appendChild(photoInput);
 
-    // Create a horizontal, animated icon bar
-    let iconBar = document.createElement('div');
-    iconBar.className = 'icon-bar';
- iconOptions.forEach(iconPath => { // Use global iconOptions
-      let iconImg = document.createElement('img');
-      iconImg.src = iconPath;
-      iconImg.className = 'icon-option';
-      iconImg.title = 'Select this icon';
-      iconImg.addEventListener('click', function() {
-        Array.from(iconBar.children).forEach(child => child.classList.remove('selected'));
-        iconImg.classList.add('selected');
-        photoInput.dataset.icon = iconPath;
-      });
-      iconBar.appendChild(iconImg);
-    });
-    div.appendChild(iconBar);
+    // Append the smooth icon bar using our new function
+    div.appendChild(createIconBar(photoInput));
+
     container.appendChild(div);
   }
 }
@@ -2706,6 +2667,49 @@ function renderManualPairing() {
     dropZone2.classList.remove('filled');
   }
 }
+
+
+
+function createIconBar(photoInput) {
+  const iconBar = document.createElement('div');
+  iconBar.className = 'icon-bar';
+
+  // Preload icons so they appear instantly
+  iconOptions.forEach(src => {
+    const preloadImg = new Image();
+    preloadImg.src = src;
+  });
+
+  // We'll track the currently selected icon element for efficient updates
+  let selectedIconElement = null;
+
+  iconOptions.forEach(iconPath => {
+    const iconImg = document.createElement('img');
+    iconImg.src = iconPath;
+    iconImg.className = 'icon-option';
+    iconImg.title = 'Select this icon';
+    // Add smooth transition effects
+    iconImg.style.transition = 'transform 0.2s ease, border-color 0.2s ease';
+    iconImg.addEventListener('click', () => {
+      // If another icon was already selected, remove its "selected" class
+      if (selectedIconElement) {
+        selectedIconElement.classList.remove('selected');
+      }
+      // Mark this icon as selected and update the photoInput dataset immediately
+      iconImg.classList.add('selected');
+      selectedIconElement = iconImg;
+      photoInput.dataset.icon = iconPath;
+    });
+    iconBar.appendChild(iconImg);
+  });
+  return iconBar;
+}
+
+
+
+
+
+
 
 
 
