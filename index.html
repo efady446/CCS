@@ -2698,36 +2698,63 @@ function renderManualPairing() {
 
 function createIconBar(photoInput) {
   const iconBar = document.createElement('div');
-  iconBar.className = 'icon-bar';
-
-  // Preload icons so they appear instantly
-  iconOptions.forEach(src => {
-    const preloadImg = new Image();
-    preloadImg.src = src;
-  });
-
-  // We'll track the currently selected icon element for efficient updates
-  let selectedIconElement = null;
-
-  iconOptions.forEach(iconPath => {
-    const iconImg = document.createElement('img');
-    iconImg.src = iconPath;
-    iconImg.className = 'icon-option';
-    iconImg.title = 'Select this icon';
-    // Add smooth transition effects
-    iconImg.style.transition = 'transform 0.2s ease, border-color 0.2s ease';
-    iconImg.addEventListener('click', () => {
-      // If another icon was already selected, remove its "selected" class
-      if (selectedIconElement) {
-        selectedIconElement.classList.remove('selected');
+  iconBar.classList.add('icon-bar');
+  const icons = [
+    "assets/icons/icon1.png",
+    "assets/icons/icon2.png",
+    "assets/icons/icon3.png",
+    "assets/icons/icon4.png",
+    "assets/icons/icon5.png",
+    "assets/icons/icon6.png",
+    "assets/icons/icon7.png",
+    "assets/icons/icon8.png"
+  ];
+  
+  icons.forEach(iconSrc => {
+    const icon = document.createElement('img');
+    icon.src = iconSrc;
+    icon.classList.add('icon-option');
+    
+    icon.addEventListener('click', function() {
+      // Toggle deselection if already selected
+      if (icon.classList.contains('selected')) {
+        icon.classList.remove('selected');
+        photoInput.dataset.icon = "";
+        // Re-enable photo upload option
+        photoInput.disabled = false;
+      } else {
+        // Deselect any other selected icons in this bar
+        const previouslySelected = iconBar.querySelector('.selected');
+        if (previouslySelected) {
+          previouslySelected.classList.remove('selected');
+        }
+        icon.classList.add('selected');
+        // Set chosen icon and disable photo upload
+        photoInput.dataset.icon = iconSrc;
+        // Clear any previously uploaded photo
+        photoInput.value = "";
+        photoInput.dataset.photo = "";
+        photoInput.disabled = true;
       }
-      // Mark this icon as selected and update the photoInput dataset immediately
-      iconImg.classList.add('selected');
-      selectedIconElement = iconImg;
-      photoInput.dataset.icon = iconPath;
     });
-    iconBar.appendChild(iconImg);
+    
+    iconBar.appendChild(icon);
   });
+  
+  // Monitor file input: if a photo is uploaded, clear icon selection and re-enable icons
+  photoInput.addEventListener('change', function() {
+    if (photoInput.files && photoInput.files[0]) {
+      // Clear icon selection if a photo is chosen
+      const selectedIcon = iconBar.querySelector('.selected');
+      if (selectedIcon) {
+        selectedIcon.classList.remove('selected');
+      }
+      photoInput.dataset.icon = "";
+      // Make sure the input is enabled for photo uploads
+      photoInput.disabled = false;
+    }
+  });
+  
   return iconBar;
 }
 
