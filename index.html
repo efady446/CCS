@@ -981,6 +981,17 @@ html, body {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
   </style>
 </head>
 <body class="dark-mode">
@@ -1176,7 +1187,9 @@ const iconOptions = [
   "assets/icons/icon3.png",
   "assets/icons/icon4.png",
   "assets/icons/icon5.png",
-  "assets/icons/icon6.png"
+  "assets/icons/icon6.png",
+  "assets/icons/icon7.png",
+  "assets/icons/icon8.png"
 ];
 
 
@@ -1321,12 +1334,14 @@ function generateKnockdownTeams() {
 
   // Define your icon options globally (if not already defined)
   const iconOptions = [
-    "assets/icons/icon1.png",
-    "assets/icons/icon2.png",
-    "assets/icons/icon3.png",
-    "assets/icons/icon4.png",
-    "assets/icons/icon5.png",
-    "assets/icons/icon6.png"
+   "assets/icons/icon1.png",
+  "assets/icons/icon2.png",
+  "assets/icons/icon3.png",
+  "assets/icons/icon4.png",
+  "assets/icons/icon5.png",
+  "assets/icons/icon6.png",
+  "assets/icons/icon7.png",
+  "assets/icons/icon8.png"
   ];
 
   for (let i = 0; i < count; i++) {
@@ -1367,6 +1382,9 @@ function generateKnockdownTeams() {
   document.getElementById('startBtn').classList.remove('hidden');
 }
  function startTournament() {
+
+document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1200, initial-scale=1');
+
   let teamDivs = Array.from(document.getElementById('teamInputs').children);
   let teams = teamDivs.map(div => {
     let name = div.querySelector('input[type="text"]').value.trim();
@@ -1601,12 +1619,15 @@ function generateLeagueTeams() {
 
   // Define your icon options (if not defined globally)
   const iconOptions = [
-    "assets/icons/icon1.png",
-    "assets/icons/icon2.png",
-    "assets/icons/icon3.png",
-    "assets/icons/icon4.png",
-    "assets/icons/icon5.png",
-    "assets/icons/icon6.png"
+  "assets/icons/icon1.png",
+  "assets/icons/icon2.png",
+  "assets/icons/icon3.png",
+  "assets/icons/icon4.png",
+  "assets/icons/icon5.png",
+  "assets/icons/icon6.png",
+  "assets/icons/icon7.png",
+  "assets/icons/icon8.png"
+
   ];
 
   for (let i = 0; i < count; i++) {
@@ -2315,7 +2336,12 @@ function selectLeagueResult(roundIndex, matchIndex, resultType, winningTeam) {
     /********************
      * Return Home *
      ********************/
-    function returnHome() { location.reload(); }
+    function returnHome() {
+document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1');
+
+
+
+ location.reload(); }
     
     /********************
      * Tournament Modal *
@@ -2710,6 +2736,23 @@ function createIconBar(photoInput) {
 
 
 
+function saveResultAsImage() {
+  // Select the element you want to capture, e.g. the tournament bracket or league container
+  const element = document.getElementById('tournament') || document.getElementById('league');
+  html2canvas(element).then(canvas => {
+    // Convert the canvas to an image data URL
+    const dataURL = canvas.toDataURL('image/png');
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = 'tournament_result.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }).catch(error => {
+    console.error("Error capturing image:", error);
+  });
+}
 
 
 
