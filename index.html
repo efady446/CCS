@@ -341,6 +341,202 @@ html, body {
   }
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap');
+
+.league-theme {
+  font-family: 'Oswald', sans-serif;
+  background-color: #f5f5f5; /* Overall light background for the page */
+  color: #333; /* Base text color */
+}
+
+/* Ensure the page background (if needed) matches */
+.league-theme body {
+  background: #f5f5f5;
+}
+
+/* Background Container: adjust brightness for your league background GIF */
+.league-theme #bgImage {
+  filter: brightness(0.9);
+}
+
+/* Transparent Containers with premium look */
+.league-theme .container {
+  background: rgba(255, 255, 255, 0.8); /* 80% opaque white */
+  border: 3px solid #cc0000; /* Bold red border */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+/* Headings: Bold, uppercase red with a subtle shadow */
+.league-theme h1,
+.league-theme h2,
+.league-theme h3 {
+  color: #cc0000;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  margin-bottom: 15px;
+}
+
+/* Buttons: Green gradient background, red border, modern hover effect */
+.league-theme button {
+  background: linear-gradient(135deg, #008000, #006600);
+  border: 2px solid #cc0000;
+  border-radius: 6px;
+  color: #fff;
+  padding: 12px 24px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: background 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+}
+.league-theme button:hover {
+  background: linear-gradient(135deg, #006600, #004d00);
+  transform: translateY(-3px);
+}
+
+/* Input Fields: Light green transparent background with solid green borders */
+.league-theme input[type="text"],
+.league-theme input[type="number"],
+.league-theme select,
+.league-theme textarea {
+  background: rgba(230, 255, 230, 0.8);
+  border: 2px solid #006600;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 1rem;
+  color: #003300;
+}
+
+/* Links: Red text with a green underline effect */
+.league-theme a {
+  color: #cc0000;
+  text-decoration: none;
+  border-bottom: 1px solid #006600;
+}
+.league-theme a:hover {
+  color: #006600;
+  border-bottom: 1px solid #cc0000;
+}
+
+/* Tournament Name Section */
+.league-theme #tournamentNameSection input {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #006600;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 1rem;
+  color: #003300;
+}
+
+/* Global Leaderboard */
+.league-theme #persistentLeaderboardContent {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #cc0000;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+
+
+
+
+/* Champion League Theme */
+.champion-theme {
+  font-family: 'Cinzel', serif;  /* Already imported in your head */
+  background-color: #012169;       /* Deep blue */
+  color: #d4af37;                /* Gold for text */
+}
+
+/* Headings: Bold, uppercase gold with subtle shadow */
+.champion-theme h1,
+.champion-theme h2,
+.champion-theme h3 {
+  color: #d4af37;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 2px #000;
+  margin-bottom: 10px;
+}
+
+/* Buttons: Deep blue background, gold border and text */
+.champion-theme button {
+  background-color: #012169;
+  border: 2px solid #d4af37;
+  border-radius: 4px;
+  color: #d4af37;
+  padding: 12px 20px;
+  text-transform: uppercase;
+  font-weight: bold;
+  transition: background 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+}
+.champion-theme button:hover {
+  background-color: #001c3b;
+  transform: scale(1.05);
+}
+
+/* Containers: Semi-transparent deep blue with a gold border */
+.champion-theme .container {
+  background: rgba(1,33,105,0.85);
+  border: 4px solid #d4af37;
+  box-shadow: 0 0 40px rgba(1,33,105,0.7);
+  padding: 40px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+/* Input Fields: Dark blue background with gold borders */
+.champion-theme input[type="text"],
+.champion-theme input[type="number"],
+.champion-theme select,
+.champion-theme textarea {
+  background-color: #001f3f;
+  border: 2px solid #d4af37;
+  padding: 10px;
+  border-radius: 4px;
+  color: #d4af37;
+}
+
+/* Links: Gold text with subtle underline */
+.champion-theme a {
+  color: #d4af37;
+  text-decoration: none;
+  border-bottom: 1px solid #d4af37;
+}
+.champion-theme a:hover {
+  color: #f5c842;
+  border-bottom: 1px solid #f5c842;
+}
+
+/* Background Container: Adjust brightness if needed */
+.champion-theme #bgImage {
+  filter: brightness(1);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -979,13 +1175,16 @@ html, body {
 }
 
 
-
-
-
-
-
-
-
+#bgImage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center center;
+  z-index: -9999; /* Ensure it's behind everything */
+}
 
 
 
@@ -998,15 +1197,12 @@ html, body {
   <!-- Mute/Unmute Button -->
   <button id="muteBtn" title="Toggle Sound">🔊</button>
   <!-- Theme Toggle Button -->
-  <button id="themeToggle" title="Toggle Alternate Mode">⭐</button>
   
-  <!-- Fullscreen Background Video -->
-  <video id="bgVideo" autoplay muted loop>
-    <source src="assets/video/champions_league_video.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-  <!-- Gradient Overlay -->
-  <div id="videoOverlay"></div>
+
+  <div id="bgImage"></div>
+<audio id="bgSound" loop preload="auto"></audio>
+
+
   
   <!-- Audio Elements -->
   <audio id="bgSound" src="assets/audio/champions_league_sound.mp3" loop preload="auto"></audio>
@@ -1040,12 +1236,13 @@ html, body {
 
     <!-- Mode Selection -->
     <div class="mode-controls">
-      <label>
-        <input type="radio" name="mode" value="knockout" checked> Champion Tournament (Knockout)
-      </label>
-      <label>
-        <input type="radio" name="mode" value="league"> League Tournament
-      </label>
+   <label>
+  <input type="radio" name="mode" value="knockout" checked> Champion Tournament (Knockout)
+</label>
+<label>
+  <input type="radio" name="mode" value="league"> League Tournament
+</label>
+
     </div>
     
     <!-- Knockout Mode Controls -->
@@ -1206,22 +1403,51 @@ let leagueHistory = [];
     /***********************
      * Mode Change Handler *
      ***********************/
+
+
     document.querySelectorAll('input[name="mode"]').forEach(input => {
       input.addEventListener('change', onModeChange);
     });
     function onModeChange() {
-      let mode = document.querySelector('input[name="mode"]:checked').value;
-      tournament.mode = mode;
-      if (mode === "knockout") {
-        document.getElementById('knockoutControls').classList.remove('hidden');
-        document.getElementById('teamInputs').classList.remove('hidden');
-        document.getElementById('leagueControls').classList.add('hidden');
-      } else if (mode === "league") {
-        document.getElementById('leagueControls').classList.remove('hidden');
-        document.getElementById('teamInputs').classList.add('hidden');
-        document.getElementById('knockoutControls').classList.add('hidden');
-      }
-    }
+  let mode = document.querySelector('input[name="mode"]:checked').value;
+  tournament.mode = mode;
+
+
+  const bgImage = document.getElementById('bgImage');
+  const bgSound = document.getElementById('bgSound');
+  // Update UI controls for modes
+  if (mode === "knockout") {
+    document.getElementById('knockoutControls').classList.remove('hidden');
+    document.getElementById('teamInputs').classList.remove('hidden');
+    document.getElementById('leagueControls').classList.add('hidden');
+        document.body.classList.remove('league-theme');
+    document.body.classList.add('champion-theme');
+
+    // Set background and audio for Champion League (knockout)
+    bgImage.style.background = "url('assets/icons/uefa-champions-league.gif') no-repeat center center";
+    bgSound.src = "assets/audio/champions_league_sound.mp3";
+  } else if (mode === "league") {
+    document.getElementById('leagueControls').classList.remove('hidden');
+    document.getElementById('teamInputs').classList.add('hidden');
+    document.getElementById('knockoutControls').classList.add('hidden');
+        document.body.classList.add('league-theme');
+    document.body.classList.remove('champion-theme');
+
+    bgImage.style.background = "url('assets/icons/premiere-league-premiere-league-logo.gif') no-repeat center center";
+    bgSound.src =  "assets/audio/English_Premier_League.mp3";
+  }
+  
+ // Ensure background covers the whole viewport
+  bgImage.style.backgroundSize = "cover";
+  
+  // Reload audio
+  bgSound.load();
+  bgSound.play().then(() => {
+    console.log('Sound is playing');
+  }).catch(err => {
+    console.log('Audio playback failed (likely due to auto-play restrictions), please interact with the page to start the sound.', err);
+  });
+}
     
   /*********************
    * Audio & Mute Control *
@@ -1260,29 +1486,7 @@ let leagueHistory = [];
 
 
 
-  /***********************
-   * Theme Toggle Control *
-   ***********************/
-  const themeToggle = document.getElementById('themeToggle');
-  
-  // On page load, retrieve the stored theme setting (if any)
-  const storedTheme = localStorage.getItem('isAlternateMode');
-  if (storedTheme === 'true') {
-    document.body.classList.add('alternate-mode');
-    themeToggle.textContent = '🌙';
-  } else {
-    document.body.classList.remove('alternate-mode');
-    themeToggle.textContent = '⭐';
-  }
-  
-  // Toggle the alternate mode on button click and save the state
-  themeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('alternate-mode');
-    const isAlternate = document.body.classList.contains('alternate-mode');
-    themeToggle.textContent = isAlternate ? '🌙' : '⭐';
-    localStorage.setItem('isAlternateMode', isAlternate);
-  });
-  
+ 
     
     /*********************
      * Toast Notifications *
@@ -2782,9 +2986,34 @@ function saveResultAsImage() {
 }
 
 
+function updateTournamentName() {
+  const nameInput = document.getElementById('tournamentNameInput').value.trim();
+  if (nameInput) {
+    document.getElementById('roundTitle').textContent = nameInput;
+    tournament.name = nameInput; // Save it in your tournament object if needed
+  } else {
+    // If nothing's entered, fallback to a default name
+    document.getElementById('roundTitle').textContent = 'Tournament Bracket';
+    tournament.name = 'Tournament Bracket';
+  }
+}
 
 
 
+
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Ensure default mode is Champion (knockout)
+  const championModeRadio = document.querySelector('input[name="mode"][value="knockout"]');
+  if (championModeRadio) {
+    championModeRadio.checked = true;
+  }
+  tournament.mode = 'knockout'; // Set the default tournament mode
+  
+  // Call the onModeChange function to update background and sound
+  onModeChange();
+});
 
 
   </script>
