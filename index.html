@@ -2722,6 +2722,11 @@ function showChampionRecordByName(name, timestamp) {
     // Load Knockout Champion Display
     document.getElementById('championDisplay').classList.remove('hidden');
     
+    document.querySelector('input[name="mode"][value="knockout"]').checked = true;
+    tournament.mode = "knockout";
+    onModeChange();
+
+
     // Update (or add) the favicon image in the same position as the trophy.
     // (This assumes you want to use the favicon instead of the trophy for knockout records.)
     const trophyImg = document.querySelector('#championDisplay .trophy');
@@ -2743,6 +2748,11 @@ function showChampionRecordByName(name, timestamp) {
     tournament.rounds = record.rounds;
     leagueStandings = record.table;
     tournament.totalTeams = Object.keys(leagueStandings).length;
+
+    document.querySelector('input[name="mode"][value="league"]').checked = true;
+    tournament.mode = "league";
+    onModeChange();
+
     renderLeagueSchedule();
     updateLeagueTable();
     let teams = [];
@@ -2896,10 +2906,20 @@ function loadSavedTournament(id) {
   if (state.mode === 'knockout') {
     document.getElementById('tournament').classList.remove('hidden');
     renderBracket();
+
+
+  document.querySelector(`input[name="mode"][value="${tournament.mode}"]`).checked = true;
+    tournament.mode = "knockout";
+    onModeChange();
+
   } else if (state.mode === 'league') {
     document.getElementById('league').classList.remove('hidden');
     renderLeagueSchedule();
     updateLeagueTable();
+
+  document.querySelector(`input[name="mode"][value="${tournament.mode}"]`).checked = true;
+    tournament.mode = "league";
+    onModeChange();
   }
 }
 
