@@ -188,20 +188,20 @@ html, body {
 
 /* Adjustments for screens up to 768px (tablets and smaller) */
 @media (max-width: 768px) {
-    /* Stack bracket rounds vertically for knockout mode */
-    #bracket, #championBracket {
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-    }
-    .bracket-round {
-        width: 100%;
-        max-width: 300px;
-        min-width: 0; /* Override fixed min-width for mobile */
-    }
-    .connectors {
-        display: none; /* Hide connectors as they don’t align in vertical layout */
-    }
+  #bracket, #championBracket {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .bracket-round {
+    width: 100%;
+    max-width: 300px;
+    min-width: 0;
+  }
+  .connectors {
+    display: none;
+  }
+}
 
     /* Stack manual pairing bucket vertically */
     #pairingBucket {
@@ -1759,10 +1759,10 @@ function finishManualPairing() {
     round.matches.forEach((match, matchIndex) => {
       const matchDiv = document.createElement('div');
       matchDiv.className = 'match';
+      matchDiv.id = `match-${roundIndex}-${matchIndex}`; // Assign unique ID
       const teamsContainer = document.createElement('div');
       teamsContainer.className = 'teams';
 
-      // Determine styling based on current selection
       let team1Status = "";
       let team2Status = "";
       if (match.winner) {
@@ -1774,7 +1774,6 @@ function finishManualPairing() {
         }
       }
 
-      // Always attach click listeners regardless of match state
       const team1Div = document.createElement('div');
       team1Div.innerHTML = renderTeam(match.team1, team1Status);
       team1Div.style.cursor = "pointer";
@@ -1793,7 +1792,6 @@ function finishManualPairing() {
       teamsContainer.appendChild(team2Div);
       matchDiv.appendChild(teamsContainer);
 
-      // If not the final round, add connectors between rounds
       if (roundIndex < tournament.rounds.length - 1) {
         const connectors = document.createElement('div');
         connectors.className = 'connectors';
@@ -1808,9 +1806,8 @@ function finishManualPairing() {
   });
   adjustPositions(bracketDiv);
 }
-
     
-  function selectWinner(roundIndex, matchIndex, winner) {
+ function selectWinner(roundIndex, matchIndex, winner) {
   const championDisplay = document.getElementById('championDisplay');
   const tournamentDiv = document.getElementById('tournament');
   if (!championDisplay.classList.contains('hidden')) {
@@ -1819,32 +1816,59 @@ function finishManualPairing() {
   }
 
   const match = tournament.rounds[roundIndex].matches[matchIndex];
-  knockoutHistory.push({ type: 'rounds', rounds: JSON.parse(JSON.stringify(tournament.rounds)) }); // Save state
+  knockoutHistory.push({ type: 'rounds', rounds: JSON.parse(JSON.stringify(tournament.rounds)) });
   if (match.winner && match.winner.name !== winner.name) {
     tournament.rounds = tournament.rounds.slice(0, roundIndex + 1);
     tournament.currentRound = roundIndex;
   }
   match.winner = winner;
   renderBracket();
+
   if (tournament.rounds[tournament.currentRound].matches.every(m => m.winner)) {
     createNextRound();
+  } else {
+    // Scroll to the next undecided match in the current round
+    let nextMatchIndex = tournament.rounds[tournament.currentRound].matches.findIndex(
+      (m, idx) => idx > matchIndex && !m.winner
+    );
+    if (nextMatchIndex === -1) {
+      // Wrap around to the first undecided match if none found after current index
+      nextMatchIndex = tournament.rounds[tournament.currentRound].matches.findIndex(m => !m.winner);
+    }
+    if (nextMatchIndex !== -1) {
+      const matchId = `match-${tournament.currentRound}-${nextMatchIndex}`;
+      setTimeout(() => {
+        const matchElement = document.getElementById(matchId);
+        if (matchElement) {
+          matchElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100); // Delay to ensure DOM updates
+    }
   }
 }
-    
     function createNextRound() {
-      const currentMatches = tournament.rounds[tournament.currentRound].matches;
-      const winners = currentMatches.map(m => m.winner);
-      if (winners.length === 1) {
-        showChampion(winners[0]);
-        return;
-      }
-      const nextRoundMatches = [];
-      for (let i = 0; i < winners.length; i += 2)
-        nextRoundMatches.push({ team1: winners[i], team2: winners[i+1], winner: null });
-      tournament.rounds.push({ matches: nextRoundMatches });
-      tournament.currentRound++;
-      renderBracket();
+  const currentMatches = tournament.rounds[tournament.currentRound].matches;
+  const winners = currentMatches.map(m => m.winner);
+  if (winners.length === 1) {
+    showChampion(winners[0]);
+    return;
+  }
+  const nextRoundMatches = [];
+  for (let i = 0; i < winners.length; i += 2)
+    nextRoundMatches.push({ team1: winners[i], team2: winners[i+1], winner: null });
+  tournament.rounds.push({ matches: nextRoundMatches });
+  tournament.currentRound++;
+  renderBracket();
+
+  // Scroll to the first match of the new round
+  const firstMatchId = `match-${tournament.currentRound}-0`;
+  setTimeout(() => {
+    const matchElement = document.getElementById(firstMatchId);
+    if (matchElement) {
+      matchElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+  }, 100); // Delay to ensure DOM updates
+}
     
     function getRoundName(teamCount) {
       const names = { 16: 'Round of 16', 8: 'Quarter Finals', 4: 'Semi Finals', 2: 'Final' };
