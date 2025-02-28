@@ -623,6 +623,22 @@ html, body {
 
 
 
+/* Adjust drop zones for mobile */
+@media (max-width: 768px) {
+  .dropZone {
+    width: 100%;
+    height: 150px; /* Bigger for easy tapping */
+    font-size: 1.5em;
+  }
+}
+
+/* Highlight selected team */
+.draggableTeam.selected {
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 10px var(--gold);
+}
+
+
 
 
 
