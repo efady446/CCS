@@ -732,20 +732,7 @@ html, body {
 
 
 
-/* Adjust drop zones for mobile */
-@media (max-width: 768px) {
-  .dropZone {
-    width: 100%;
-    height: 150px; /* Bigger for easy tapping */
-    font-size: 1.5em;
-  }
-}
 
-/* Highlight selected team */
-.draggableTeam.selected {
-  border: 2px solid var(--gold);
-  box-shadow: 0 0 10px var(--gold);
-}
 
 
 
@@ -1393,19 +1380,18 @@ html, body {
     </div>
     
     <!-- Manual Pairing Container (for Knockout Mode) -->
-   <div id="manualPairingContainer" class="hidden">
-  <h3>Manual Pairing</h3>
-  <p>Drag teams into the slots to create matches. On mobile, tap a team to select, then tap a drop zone to place.</p>
-  <div id="availableTeams"></div>
-  <div id="pairingBucket">
-    <div class="dropZone" id="dropZone1" ondragover="allowDrop(event)" ondrop="dropTeam(event, 1)">Team Slot 1</div>
-    <div class="vs-text">VS</div>
-    <div class="dropZone" id="dropZone2" ondragover="allowDrop(event)" ondrop="dropTeam(event, 2)">Team Slot 2</div>
-  </div>
-
-   <div id="formedMatches"></div>
-  <button id="finishPairingBtn" class="hidden" onclick="finishManualPairing()">Finish Pairing</button>
-</div>
+    <div id="manualPairingContainer" class="hidden">
+      <h3>Manual Pairing</h3>
+      <p>Drag teams into the slots to create matches</p>
+      <div id="availableTeams"></div>
+      <div id="pairingBucket">
+        <div class="dropZone" id="dropZone1" ondragover="allowDrop(event)" ondrop="dropTeam(event, 1)">Team Slot 1</div>
+        <div class="vs-text">VS</div>
+        <div class="dropZone" id="dropZone2" ondragover="allowDrop(event)" ondrop="dropTeam(event, 2)">Team Slot 2</div>
+      </div>
+      <div id="formedMatches"></div>
+      <button id="finishPairingBtn" class="hidden" onclick="finishManualPairing()">Finish Pairing</button>
+    </div>
     
     <!-- Container for Knockout Team Inputs -->
     <div id="teamInputs"></div>
@@ -1716,7 +1702,7 @@ function generateKnockdownTeams() {
 
 document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1200, initial-scale=1');
 
-    let teamDivs = Array.from(document.getElementById('teamInputs').children);
+  let teamDivs = Array.from(document.getElementById('teamInputs').children);
   let teams = teamDivs.map(div => {
     let name = div.querySelector('input[type="text"]').value.trim();
     let photoInput = div.querySelector('input[type="file"]');
@@ -1725,28 +1711,20 @@ document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1
     if (!name) throw new Error("Please fill in all team names.");
     return { name, photo, icon };
   });
-  knockoutHistory = [{ type: 'setup', teams: teams.map(team => ({ name: team.name, icon: team.icon, photo: team.photo })) }];
+  knockoutHistory = [{ type: 'setup', teams: teams.map(team => ({ name: team.name, icon: team.icon, photo: team.photo })) }]; // Include icon and photo
 
   if (new Set(teams.map(t => t.name)).size !== teams.length)
     throw new Error("Team names must be unique.");
   if (teams.length !== parseInt(document.getElementById('teamCount').value))
     throw new Error("Incorrect number of teams entered.");
   tournament.pairing = document.querySelector('input[name="pairing"]:checked').value;
-  tournament.initialTeams = teams;
+  tournament.initialTeams = teams; // Store initial teams
   if (tournament.pairing === "random") {
     tournament.rounds = [{ matches: createRandomPairs(teams) }];
-    knockoutHistory = [{ type: 'setup', teams: teams }];
+    knockoutHistory = [{ type: 'setup', teams: teams }]; // Initialize history with setup state
     document.getElementById('setup').classList.add('hidden');
     document.getElementById('tournament').classList.remove('hidden');
     renderBracket();
-    // Scroll to the first match
-    setTimeout(() => {
-      const firstMatchId = `match-0-0`;
-      const matchElement = document.getElementById(firstMatchId);
-      if (matchElement) {
-        matchElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 100); // Small delay to ensure the DOM is ready
   } else {
     document.getElementById('teamInputs').classList.add('hidden');
     startManualPairing(teams);
@@ -1755,19 +1733,11 @@ document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1
 
 function finishManualPairing() {
   tournament.rounds = [{ matches: manualPairing.matches.slice() }];
-  knockoutHistory = [{ type: 'setup', teams: tournament.initialTeams }];
+  knockoutHistory = [{ type: 'setup', teams: tournament.initialTeams }]; // Initialize history with setup state
   document.getElementById('manualPairingContainer').classList.add('hidden');
   document.getElementById('setup').classList.add('hidden');
   document.getElementById('tournament').classList.remove('hidden');
   renderBracket();
-  // Scroll to the first match
-  setTimeout(() => {
-    const firstMatchId = `match-0-0`;
-    const matchElement = document.getElementById(firstMatchId);
-    if (matchElement) {
-      matchElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, 100); // Small delay to ensure the DOM is ready
 }
     function createRandomPairs(teams) {
       const shuffled = teams.slice().sort(() => Math.random() - 0.5);
@@ -1915,62 +1885,28 @@ function finishManualPairing() {
       document.getElementById('manualPairingContainer').classList.remove('hidden');
       updateAvailableTeamsUI();
     }
-    // Update the available teams UI with tap support
-function updateAvailableTeamsUI() {
-  const container = document.getElementById('availableTeams');
-  container.innerHTML = '';
-  manualPairing.availableTeams.forEach((team, index) => {
-    const div = document.createElement('div');
-    div.innerHTML = renderTeam(team);
-    div.className = 'draggableTeam';
-    div.setAttribute('draggable', 'true');
-    div.setAttribute('data-index', index);
-    div.addEventListener('dragstart', dragStart);
-    // Add tap/click event
-    div.addEventListener('click', function() {
-      selectTeamForDrop(index);
-    });
-    container.appendChild(div);
-  });
-}
-
-// Handle team selection
-function selectTeamForDrop(index) {
-  if (selectedTeamIndex === index) {
-    // Deselect if tapped again
-    selectedTeamIndex = null;
-    document.querySelectorAll('.draggableTeam')[index].classList.remove('selected');
-  } else {
-    // Select new team
-    selectedTeamIndex = index;
-    const teams = document.querySelectorAll('.draggableTeam');
-    teams.forEach((team, idx) => {
-      team.classList.toggle('selected', idx === index);
-    });
-  }
-}
-
-
-
-
-
-
+    function updateAvailableTeamsUI() {
+      const container = document.getElementById('availableTeams');
+      container.innerHTML = '';
+      manualPairing.availableTeams.forEach((team, index) => {
+        const div = document.createElement('div');
+        div.innerHTML = renderTeam(team);
+        div.className = 'draggableTeam';
+        div.setAttribute('draggable', 'true');
+        div.setAttribute('data-index', index);
+        div.addEventListener('dragstart', dragStart);
+        container.appendChild(div);
+      });
+    }
     function dragStart(event) {
       event.dataTransfer.setData("text/plain", event.currentTarget.getAttribute("data-index"));
     }
     function allowDrop(event) { event.preventDefault(); }
-
-   // Handle dropping teams (supports both drag and tap)
-function dropTeam(event, zoneNumber) {
-  let index;
-  if (event) {
-    event.preventDefault();
-    index = event.dataTransfer.getData("text/plain");
-  } else {
-    index = selectedTeamIndex;
-  }
-  if (manualPairing.dropSlots[zoneNumber] !== null) return; // Drop zone already filled
-  knockoutHistory.push({ type: 'manualPairing', manualPairing: JSON.parse(JSON.stringify(manualPairing)) });
+   function dropTeam(event, zoneNumber) {
+  event.preventDefault();
+  const index = event.dataTransfer.getData("text/plain");
+  if (manualPairing.dropSlots[zoneNumber] !== null) return;
+  knockoutHistory.push({ type: 'manualPairing', manualPairing: JSON.parse(JSON.stringify(manualPairing)) }); // Save state before drop
   const team = manualPairing.availableTeams[index];
   manualPairing.dropSlots[zoneNumber] = team;
   const dropZone = document.getElementById("dropZone" + zoneNumber);
@@ -1979,20 +1915,9 @@ function dropTeam(event, zoneNumber) {
   manualPairing.availableTeams.splice(index, 1);
   updateAvailableTeamsUI();
   if (manualPairing.dropSlots[1] && manualPairing.dropSlots[2]) {
-    formMatchFromDropZones(); // Form match when both slots are filled
+    formMatchFromDropZones();
   }
-  // Clear selection
-  selectedTeamIndex = null;
-  document.querySelectorAll('.draggableTeam').forEach(team => team.classList.remove('selected'));
 }
-
-// Add tap support to drop zones
-document.getElementById('dropZone1').addEventListener('click', function() {
-  if (selectedTeamIndex !== null) dropTeam(null, 1);
-});
-document.getElementById('dropZone2').addEventListener('click', function() {
-  if (selectedTeamIndex !== null) dropTeam(null, 2);
-});
     function formMatchFromDropZones() {
       const teamA = manualPairing.dropSlots[1];
       const teamB = manualPairing.dropSlots[2];
