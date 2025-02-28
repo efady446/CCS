@@ -1718,7 +1718,7 @@ function generateKnockdownTeams() {
 
 document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1200, initial-scale=1');
 
-  let teamDivs = Array.from(document.getElementById('teamInputs').children);
+ let teamDivs = Array.from(document.getElementById('teamInputs').children);
   let teams = teamDivs.map(div => {
     let name = div.querySelector('input[type="text"]').value.trim();
     let photoInput = div.querySelector('input[type="file"]');
@@ -1727,20 +1727,28 @@ document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1
     if (!name) throw new Error("Please fill in all team names.");
     return { name, photo, icon };
   });
-  knockoutHistory = [{ type: 'setup', teams: teams.map(team => ({ name: team.name, icon: team.icon, photo: team.photo })) }]; // Include icon and photo
+  knockoutHistory = [{ type: 'setup', teams: teams.map(team => ({ name: team.name, icon: team.icon, photo: team.photo })) }];
 
   if (new Set(teams.map(t => t.name)).size !== teams.length)
     throw new Error("Team names must be unique.");
   if (teams.length !== parseInt(document.getElementById('teamCount').value))
     throw new Error("Incorrect number of teams entered.");
   tournament.pairing = document.querySelector('input[name="pairing"]:checked').value;
-  tournament.initialTeams = teams; // Store initial teams
+  tournament.initialTeams = teams;
   if (tournament.pairing === "random") {
     tournament.rounds = [{ matches: createRandomPairs(teams) }];
-    knockoutHistory = [{ type: 'setup', teams: teams }]; // Initialize history with setup state
+    knockoutHistory = [{ type: 'setup', teams: teams }];
     document.getElementById('setup').classList.add('hidden');
     document.getElementById('tournament').classList.remove('hidden');
     renderBracket();
+    // Scroll to the first match
+    setTimeout(() => {
+      const firstMatchId = `match-0-0`;
+      const matchElement = document.getElementById(firstMatchId);
+      if (matchElement) {
+        matchElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100); // Small delay to ensure the DOM is ready
   } else {
     document.getElementById('teamInputs').classList.add('hidden');
     startManualPairing(teams);
@@ -1749,13 +1757,20 @@ document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1
 
 function finishManualPairing() {
   tournament.rounds = [{ matches: manualPairing.matches.slice() }];
-  knockoutHistory = [{ type: 'setup', teams: tournament.initialTeams }]; // Initialize history with setup state
+  knockoutHistory = [{ type: 'setup', teams: tournament.initialTeams }];
   document.getElementById('manualPairingContainer').classList.add('hidden');
   document.getElementById('setup').classList.add('hidden');
   document.getElementById('tournament').classList.remove('hidden');
   renderBracket();
-}
-    function createRandomPairs(teams) {
+  // Scroll to the first match
+  setTimeout(() => {
+    const firstMatchId = `match-0-0`;
+    const matchElement = document.getElementById(firstMatchId);
+    if (matchElement) {
+      matchElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 100); // Small delay to ensure the DOM is ready
+}    function createRandomPairs(teams) {
       const shuffled = teams.slice().sort(() => Math.random() - 0.5);
       const matches = [];
       for (let i = 0; i < shuffled.length; i += 2)
